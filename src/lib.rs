@@ -1,7 +1,7 @@
 use anyhow::Context;
 use bevy::prelude::*;
 
-pub mod theme;
+pub mod colors;
 
 pub fn styled(style: &str) -> Style {
     get_styled(style).expect("Failed to parse styled string")
@@ -170,7 +170,9 @@ pub fn get_styled(style: &str) -> anyhow::Result<Style> {
 }
 
 fn get_val(replace: &str, style: &str) -> anyhow::Result<Val> {
-    Ok(if style.contains('/') {
+    Ok(if style.ends_with("auto") {
+        Val::Auto
+    } else if style.contains('/') {
         Val::Percent(parse_frac(replace, style)?)
     } else {
         Val::Px(parse_px(replace, style)?)
@@ -181,7 +183,7 @@ fn parse_px(replace: &str, style: &str) -> anyhow::Result<f32> {
     style
         .replace(replace, "")
         .parse::<f32>()
-        .context("Failed to parse px value")
+        .context(format!("Failed to parse px value: {style}"))
 }
 
 fn parse_frac(replace: &str, style: &str) -> anyhow::Result<f32> {
@@ -189,10 +191,10 @@ fn parse_frac(replace: &str, style: &str) -> anyhow::Result<f32> {
     let vals: Vec<&str> = style.split('/').collect();
     let v0 = vals[0]
         .parse::<f32>()
-        .context("Failed to parse percent value left")?;
+        .context(format!("Failed to parse percent value left: {style}"))?;
     let v1 = vals[1]
         .parse::<f32>()
-        .context("Failed to parse percent value right")?;
+        .context(format!("Failed to parse percent value right: {style}"))?;
 
     Ok(((v0 / v1) * 100.0).clamp(0.0, 100.0))
 }
@@ -213,6 +215,7 @@ mod tests {
     #[test]
     fn test_parse_percent() {
         assert_eq!(parse_frac("", "1/2").unwrap(), 50.0);
+        assert_eq!(parse_frac("", "1.0/2.0").unwrap(), 50.0);
         assert_eq!(parse_frac("", "1/1").unwrap(), 100.0);
         assert_eq!(parse_frac("", "2/1").unwrap(), 100.0);
     }
@@ -221,6 +224,7 @@ mod tests {
     fn test_get_val() {
         assert_eq!(get_val("", "1/2").unwrap(), Val::Percent(50.0));
         assert_eq!(get_val("", "50").unwrap(), Val::Px(50.0));
+        assert_eq!(get_val("", "auto").unwrap(), Val::Auto);
         assert!(get_val("", "hello").is_err());
     }
 
