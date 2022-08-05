@@ -12,11 +12,14 @@ pub fn get_styled(style: &str) -> anyhow::Result<Style> {
     let mut out = Style::default();
     for style in styles {
         if style.starts_with("flex-") {
-            out.flex_direction = match style {
-                "flex-col" => FlexDirection::Column,
-                "flex-col-reverse" => FlexDirection::ColumnReverse,
-                "flex-row" => FlexDirection::Row,
-                "flex-row-reverse" => FlexDirection::RowReverse,
+            match style {
+                "flex-col" => out.flex_direction = FlexDirection::Column,
+                "flex-col-reverse" => out.flex_direction = FlexDirection::ColumnReverse,
+                "flex-row" => out.flex_direction = FlexDirection::Row,
+                "flex-row-reverse" => out.flex_direction = FlexDirection::RowReverse,
+                "flex-wrap" => out.flex_wrap = FlexWrap::Wrap,
+                "flex-wrap-reverse" => out.flex_wrap = FlexWrap::WrapReverse,
+                "flex-nowrap" => out.flex_wrap = FlexWrap::NoWrap,
                 _ => unimplemented!(),
             }
         } else if style.starts_with("justify-") {
