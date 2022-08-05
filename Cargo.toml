@@ -1,0 +1,16 @@
+[package]
+name = "bevy_ui_styled"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/IceSentry/bevy_ui_styled"
+
+[dependencies]
+anyhow = "1.0.59"
+bevy = { version = "0.8.0", default-features = false, features = [
+    "bevy_ui",
+    "render",
+] }
+
+[dev-dependencies]
+bevy = "0.8.0"
