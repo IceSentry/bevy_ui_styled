@@ -13,14 +13,16 @@ pub fn get_styled(style: &str) -> anyhow::Result<Style> {
     for style in styles {
         if style.starts_with("flex-") {
             match style {
+                // direction
                 "flex-col" => out.flex_direction = FlexDirection::Column,
                 "flex-col-reverse" => out.flex_direction = FlexDirection::ColumnReverse,
                 "flex-row" => out.flex_direction = FlexDirection::Row,
                 "flex-row-reverse" => out.flex_direction = FlexDirection::RowReverse,
+                // wrap
                 "flex-wrap" => out.flex_wrap = FlexWrap::Wrap,
                 "flex-wrap-reverse" => out.flex_wrap = FlexWrap::WrapReverse,
                 "flex-nowrap" => out.flex_wrap = FlexWrap::NoWrap,
-                _ => unimplemented!(),
+                _ => unimplemented!("{style}"),
             }
         } else if style.starts_with("justify-") {
             out.justify_content = match style {
@@ -30,7 +32,7 @@ pub fn get_styled(style: &str) -> anyhow::Result<Style> {
                 "justify-between" => JustifyContent::SpaceBetween,
                 "justify-around" => JustifyContent::SpaceAround,
                 "justify-evenly" => JustifyContent::SpaceEvenly,
-                _ => unimplemented!(),
+                _ => unimplemented!("{style}"),
             }
         } else if style.starts_with("items-") {
             out.align_items = match style {
@@ -39,13 +41,13 @@ pub fn get_styled(style: &str) -> anyhow::Result<Style> {
                 "items-center" => AlignItems::Center,
                 "items-baseline" => AlignItems::Baseline,
                 "items-stretch" => AlignItems::Stretch,
-                _ => unimplemented!(),
+                _ => unimplemented!("{style}"),
             }
         } else if style.starts_with("overflow-") {
             out.overflow = match style {
                 "overflow-hidden" => Overflow::Hidden,
                 "overflow-visible" => Overflow::Visible,
-                _ => unimplemented!(),
+                _ => unimplemented!("{style}"),
             }
         }
 
