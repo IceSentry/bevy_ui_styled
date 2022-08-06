@@ -11,164 +11,189 @@ pub fn get_styled(style: &str) -> anyhow::Result<Style> {
     let styles: Vec<&str> = style.split(' ').collect();
     let mut out = Style::default();
     for style in styles {
-        if style.starts_with("flex-") {
-            match style {
-                // direction
-                "flex-col" => out.flex_direction = FlexDirection::Column,
-                "flex-col-reverse" => out.flex_direction = FlexDirection::ColumnReverse,
-                "flex-row" => out.flex_direction = FlexDirection::Row,
-                "flex-row-reverse" => out.flex_direction = FlexDirection::RowReverse,
-                // wrap
-                "flex-wrap" => out.flex_wrap = FlexWrap::Wrap,
-                "flex-wrap-reverse" => out.flex_wrap = FlexWrap::WrapReverse,
-                "flex-nowrap" => out.flex_wrap = FlexWrap::NoWrap,
-                _ => unimplemented!("{style}"),
+        match style {
+            style if style.starts_with("flex-") => {
+                match style {
+                    // direction
+                    "flex-col" => out.flex_direction = FlexDirection::Column,
+                    "flex-col-reverse" => out.flex_direction = FlexDirection::ColumnReverse,
+                    "flex-row" => out.flex_direction = FlexDirection::Row,
+                    "flex-row-reverse" => out.flex_direction = FlexDirection::RowReverse,
+                    // wrap
+                    "flex-wrap" => out.flex_wrap = FlexWrap::Wrap,
+                    "flex-wrap-reverse" => out.flex_wrap = FlexWrap::WrapReverse,
+                    "flex-nowrap" => out.flex_wrap = FlexWrap::NoWrap,
+                    _ => unimplemented!("{style}"),
+                }
             }
-        } else if style.starts_with("justify-") {
-            out.justify_content = match style {
-                "justify-start" => JustifyContent::FlexStart,
-                "justify-end" => JustifyContent::FlexEnd,
-                "justify-center" => JustifyContent::Center,
-                "justify-between" => JustifyContent::SpaceBetween,
-                "justify-around" => JustifyContent::SpaceAround,
-                "justify-evenly" => JustifyContent::SpaceEvenly,
-                _ => unimplemented!("{style}"),
+            style if style.starts_with("justify-") => {
+                out.justify_content = match style {
+                    "justify-start" => JustifyContent::FlexStart,
+                    "justify-end" => JustifyContent::FlexEnd,
+                    "justify-center" => JustifyContent::Center,
+                    "justify-between" => JustifyContent::SpaceBetween,
+                    "justify-around" => JustifyContent::SpaceAround,
+                    "justify-evenly" => JustifyContent::SpaceEvenly,
+                    _ => unimplemented!("{style}"),
+                }
             }
-        } else if style.starts_with("items-") {
-            out.align_items = match style {
-                "items-start" => AlignItems::FlexStart,
-                "items-end" => AlignItems::FlexEnd,
-                "items-center" => AlignItems::Center,
-                "items-baseline" => AlignItems::Baseline,
-                "items-stretch" => AlignItems::Stretch,
-                _ => unimplemented!("{style}"),
+            style if style.starts_with("items-") => {
+                out.align_items = match style {
+                    "items-start" => AlignItems::FlexStart,
+                    "items-end" => AlignItems::FlexEnd,
+                    "items-center" => AlignItems::Center,
+                    "items-baseline" => AlignItems::Baseline,
+                    "items-stretch" => AlignItems::Stretch,
+                    _ => unimplemented!("{style}"),
+                }
             }
-        } else if style.starts_with("overflow-") {
-            out.overflow = match style {
-                "overflow-hidden" => Overflow::Hidden,
-                "overflow-visible" => Overflow::Visible,
-                _ => unimplemented!("{style}"),
+            style if style.starts_with("overflow-") => {
+                out.overflow = match style {
+                    "overflow-hidden" => Overflow::Hidden,
+                    "overflow-visible" => Overflow::Visible,
+                    _ => unimplemented!("{style}"),
+                }
             }
-        }
-
-        // margin
-        if style.starts_with("mx-") {
-            let val = get_val("mx-", style)?;
-            out.margin.left = val;
-            out.margin.right = val;
-        } else if style.starts_with("my-") {
-            let val = get_val("my-", style)?;
-            out.margin.top = val;
-            out.margin.bottom = val;
-        } else if style.starts_with("mt-") {
-            out.margin.top = get_val("mt-", style)?;
-        } else if style.starts_with("mr-") {
-            out.margin.right = get_val("mr-", style)?;
-        } else if style.starts_with("mb-") {
-            out.margin.bottom = get_val("mb-", style)?;
-        } else if style.starts_with("ml-") {
-            out.margin.left = get_val("ml-", style)?;
-        } else if style.starts_with("m-") {
-            out.margin = UiRect::all(get_val("m-", style)?);
-        }
-
-        // padding
-        if style.starts_with("px-") {
-            let val = get_val("px-", style)?;
-            out.padding.left = val;
-            out.padding.right = val;
-        } else if style.starts_with("py-") {
-            let val = get_val("py-", style)?;
-            out.padding.top = val;
-            out.padding.bottom = val;
-        } else if style.starts_with("pt-") {
-            out.padding.top = get_val("pt-", style)?;
-        } else if style.starts_with("pr-") {
-            out.padding.right = get_val("pr-", style)?;
-        } else if style.starts_with("pb-") {
-            out.padding.bottom = get_val("pb-", style)?;
-        } else if style.starts_with("pl-") {
-            out.padding.left = get_val("pl-", style)?;
-        } else if style.starts_with("p-") {
-            out.padding = UiRect::all(get_val("p-", style)?);
-        }
-
-        // width
-        if style == "w-auto" {
-            out.size.width = Val::Auto;
-        } else if style == "w-full" {
-            out.size.width = Val::Percent(100.0);
-        } else if style.starts_with("w-") {
-            out.size.width = get_val("w-", style)?;
-        }
-
-        // max-width
-        if style == "max-w-auto" {
-            out.max_size.width = Val::Auto;
-        } else if style == "max-w-full" {
-            out.max_size.width = Val::Percent(100.0);
-        } else if style.starts_with("max-w-") {
-            out.max_size.width = get_val("max-w-", style)?;
-        }
-
-        // height
-        if style == "h-auto" {
-            out.size.height = Val::Auto;
-        } else if style == "h-full" {
-            out.size.height = Val::Percent(100.0);
-        } else if style.starts_with("h-") {
-            out.size.height = get_val("h-", style)?;
-        }
-
-        // max-height
-        if style == "max-h-auto" {
-            out.max_size.height = Val::Auto;
-        } else if style == "max-h-full" {
-            out.max_size.height = Val::Percent(100.0);
-        } else if style.starts_with("max-h-") {
-            out.max_size.height = get_val("max-h-", style)?;
-        }
-
-        // display
-        if style.starts_with("hidden") {
-            out.display = Display::None;
-        } else if style == "flex" {
-            out.display = Display::Flex;
-        }
-
-        // Position type
-        if style == "absolute" {
-            out.position_type = PositionType::Absolute;
-        } else if style == "rerlative" {
-            out.position_type = PositionType::Relative;
-        }
-
-        // shrink
-        if style == "shrink" {
-            out.flex_shrink = 1.0;
-        } else if style == "shrink-0" {
-            out.flex_shrink = 0.0;
-        }
-
-        // position
-        if style.starts_with("top-") {
-            out.position.top = get_val("top-", style)?;
-        } else if style.starts_with("right-") {
-            out.position.right = get_val("right-", style)?;
-        } else if style.starts_with("bottom-") {
-            out.position.bottom = get_val("bottom-", style)?;
-        } else if style.starts_with("left-") {
-            out.position.left = get_val("left-", style)?;
-        } else if style.starts_with("inset-y-") {
-            let val = get_val("inset-y-", style)?;
-            out.position.left = val;
-            out.position.right = val;
-        } else if style.starts_with("inset-x-") {
-            let val = get_val("inset-x-", style)?;
-            out.position.left = val;
-            out.position.right = val;
-        } else if style.starts_with("inset-") {
-            out.position = UiRect::all(get_val("inset-", style)?);
+            //margin
+            style if style.starts_with("mx-") => {
+                let val = get_val("mx-", style)?;
+                out.margin.left = val;
+                out.margin.right = val;
+            }
+            style if style.starts_with("my-") => {
+                let val = get_val("my-", style)?;
+                out.margin.top = val;
+                out.margin.bottom = val;
+            }
+            style if style.starts_with("mt-") => {
+                out.margin.top = get_val("mt-", style)?;
+            }
+            style if style.starts_with("mr-") => {
+                out.margin.right = get_val("mr-", style)?;
+            }
+            style if style.starts_with("mb-") => {
+                out.margin.bottom = get_val("mb-", style)?;
+            }
+            style if style.starts_with("ml-") => {
+                out.margin.left = get_val("ml-", style)?;
+            }
+            style if style.starts_with("m-") => {
+                out.margin = UiRect::all(get_val("m-", style)?);
+            }
+            // padding
+            style if style.starts_with("px-") => {
+                let val = get_val("px-", style)?;
+                out.padding.left = val;
+                out.padding.right = val;
+            }
+            style if style.starts_with("py-") => {
+                let val = get_val("py-", style)?;
+                out.padding.top = val;
+                out.padding.bottom = val;
+            }
+            style if style.starts_with("pt-") => {
+                out.padding.top = get_val("pt-", style)?;
+            }
+            style if style.starts_with("pr-") => {
+                out.padding.right = get_val("pr-", style)?;
+            }
+            style if style.starts_with("pb-") => {
+                out.padding.bottom = get_val("pb-", style)?;
+            }
+            style if style.starts_with("pl-") => {
+                out.padding.left = get_val("pl-", style)?;
+            }
+            style if style.starts_with("p-") => {
+                out.padding = UiRect::all(get_val("p-", style)?);
+            }
+            // width
+            "w-auto" => {
+                out.size.width = Val::Auto;
+            }
+            "w-full" => {
+                out.size.width = Val::Percent(100.0);
+            }
+            style if style.starts_with("w-") => {
+                out.size.width = get_val("w-", style)?;
+            }
+            // max-width
+            "max-w-auto" => {
+                out.max_size.width = Val::Auto;
+            }
+            "max-w-full" => {
+                out.max_size.width = Val::Percent(100.0);
+            }
+            style if style.starts_with("max-w-") => {
+                out.max_size.width = get_val("max-w-", style)?;
+            }
+            // height
+            "h-auto" => {
+                out.size.height = Val::Auto;
+            }
+            "h-full" => {
+                out.size.height = Val::Percent(100.0);
+            }
+            style if style.starts_with("h-") => {
+                out.size.height = get_val("h-", style)?;
+            }
+            // max-height
+            "max-h-auto" => {
+                out.max_size.height = Val::Auto;
+            }
+            "max-h-full" => {
+                out.max_size.height = Val::Percent(100.0);
+            }
+            style if style.starts_with("max-h-") => {
+                out.max_size.height = get_val("max-h-", style)?;
+            }
+            // display
+            style if style.starts_with("hidden") => {
+                out.display = Display::None;
+            }
+            "flex" => {
+                out.display = Display::Flex;
+            }
+            // Position type
+            "absolute" => {
+                out.position_type = PositionType::Absolute;
+            }
+            "relative" => {
+                out.position_type = PositionType::Relative;
+            }
+            // shrink
+            "shrink" => {
+                out.flex_shrink = 1.0;
+            }
+            "shrink-0" => {
+                out.flex_shrink = 0.0;
+            }
+            // position
+            style if style.starts_with("top-") => {
+                out.position.top = get_val("top-", style)?;
+            }
+            style if style.starts_with("right-") => {
+                out.position.right = get_val("right-", style)?;
+            }
+            style if style.starts_with("bottom-") => {
+                out.position.bottom = get_val("bottom-", style)?;
+            }
+            style if style.starts_with("left-") => {
+                out.position.left = get_val("left-", style)?;
+            }
+            style if style.starts_with("inset-y-") => {
+                let val = get_val("inset-y-", style)?;
+                out.position.left = val;
+                out.position.right = val;
+            }
+            style if style.starts_with("inset-x-") => {
+                let val = get_val("inset-x-", style)?;
+                out.position.left = val;
+                out.position.right = val;
+            }
+            style if style.starts_with("inset-") => {
+                out.position = UiRect::all(get_val("inset-", style)?);
+            }
+            _ => unimplemented!("{style}"),
         }
     }
     Ok(out)
