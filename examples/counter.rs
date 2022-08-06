@@ -83,8 +83,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 font_size: 40.0,
                 color: WHITE,
             };
+
+            let btn = styled("w-full h-full m-auto justify-center items-center");
+
             c.spawn_bundle(ButtonBundle {
-                style: styled("w-full h-full m-auto justify-center items-center"),
+                style: btn.clone(),
                 color: BUTTON_COLOR.into(),
                 ..default()
             })
@@ -104,7 +107,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             });
 
             c.spawn_bundle(ButtonBundle {
-                style: styled("w-full h-full m-auto justify-center items-center"),
+                style: btn,
                 color: BUTTON_COLOR.into(),
                 ..default()
             })
