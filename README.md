@@ -67,10 +67,10 @@ commands
 Some of those utilities support passing a numerical value. Numbers are parse as `f32` so you can pass it any valid `f32`. If you use a fraction, it will compute the value as a percentage and clamp it to 100%.
 
 ```rust
-styled("m-50") // a 50px margin
-styled("m-1.5") // a 1.5px margin
-styled("m-1/2") // a 1/2 or 50% margin. Any fraction will be converted to a percentage and clamped to 100%
-styled("m-auto") // a Val::Auto margin
+styled("m-50"); // a 50px margin
+styled("m-1.5"); // a 1.5px margin
+styled("m-1/2"); // a 1/2 or 50% margin. Any fraction will be converted to a percentage and clamped to 100%
+styled("m-auto"); // a Val::Auto margin
 ```
 
 **Warning**: In tailwind, decimal values are used to represent `em` values. Since bevy only supports percent and pixels I simply evaluate it as a pixel value. I don't know how bevy interprets a 0.5 pixel.
