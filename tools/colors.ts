@@ -1,5 +1,4 @@
-// Generate a colors.rs file based on the json
-// colors taken from <https://cdn.tailwindcss.com/>
+// Generate a colors.rs file based on jons
 const text = await Deno.readTextFile("./colors.json");
 const colors = JSON.parse(text);
 
