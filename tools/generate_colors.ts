@@ -1,4 +1,3 @@
-// Generate a colors.rs file based on jons
 const text = await Deno.readTextFile("./colors.json");
 const colors = JSON.parse(text);
 
