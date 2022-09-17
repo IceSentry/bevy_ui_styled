@@ -2,7 +2,7 @@
 
 Utility function that let's you define a bevy_ui `Style` component with tailwindcss inspired string.
 
-If you are already familiar with tailwind classes just use them and it will probably work. As long as you only use the layout related classes. Not all features are supported, for example, bevy currently only supporst flexbox. If you don't know tailwind but know bevy I'd recommend using the search in the tailwind docs which will give you a class that will probably work.
+If you are already familiar with tailwind classes just use them and it will _probably_ work. As long as you only use the layout related classes. Not all features are supported, for example, bevy currently only supports flexbox. If you don't know tailwind but know bevy I'd recommend using the search in the tailwind docs which will give you a class that will _probably_ work. It's not actually tailwind, just based on the same principles so plenty of things might not behave as expected.
 
 Reference: <https://tailwindcss.com>
 
