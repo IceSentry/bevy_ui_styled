@@ -13,53 +13,63 @@ The basic idea is that each `Style` property has a simple short-hand value that 
 This is the button example in bevy 0.8
 
 ```rust
-commands
-    .spawn(ButtonBundle {
-        style: Style {
-            size: Size::new(Val::Px(150.0), Val::Px(65.0)),
-            // center button
-            margin: UiRect::all(Val::Auto),
-            // horizontally center child text
-            justify_content: JustifyContent::Center,
-            // vertically center child text
-            align_items: AlignItems::Center,
-            ..default()
-        },
-        background_color: NORMAL_BUTTON.into(),
-        ..default()
-    })
-    .with_children(|parent| {
-        parent.spawn_bundle(TextBundle::from_section(
-            "Button",
-            TextStyle {
-                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                font_size: 40.0,
-                color: Color::rgb(0.9, 0.9, 0.9),
+use bevy::prelude::*;
+
+fn system(mut commands: Commands, asset_server: AssetServer) {
+    commands
+        .spawn(ButtonBundle {
+            style: Style {
+                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                // center button
+                margin: UiRect::all(Val::Auto),
+                // horizontally center child text
+                justify_content: JustifyContent::Center,
+                // vertically center child text
+                align_items: AlignItems::Center,
+                ..default()
             },
-        ));
-    });
+            background_color: Color::RED.into(),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+                "Button",
+                TextStyle {
+                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                    font_size: 40.0,
+                    color: Color::rgb(0.9, 0.9, 0.9),
+                },
+            ));
+        });
+}
 ```
 
 The same example using bevy_ui_styled
 
 ```rust
-commands
-    .spawn(ButtonBundle {
-        // This will return a Style component that is identical to the one above
-        style: styled("w-150 h-65 m-auto justify-center items-center"),
-        background_color: NORMAL_BUTTON.into(),
-        ..default()
-    })
-    .with_children(|parent| {
-        parent.spawn_bundle(TextBundle::from_section(
-            "Button",
-            TextStyle {
-                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                font_size: 40.0,
-                color: Color::rgb(0.9, 0.9, 0.9),
-            },
-        ));
-    });
+use bevy::prelude::*;
+use bevy_ui_styled_macro::styled;
+
+fn system(mut commands: Commands, asset_server: AssetServer) {
+    commands
+        .spawn(ButtonBundle {
+            // This will return a Style component that is identical to the one above
+            style: styled!("w-150 h-65 m-auto justify-center items-center"),
+            background_color: Color::RED.into(),
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+                "Button",
+                TextStyle {
+                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                    font_size: 40.0,
+                    color: Color::rgb(0.9, 0.9, 0.9),
+                },
+            ));
+        });
+}
+
 ```
 
 ## Px, Percent, Auto
@@ -67,10 +77,12 @@ commands
 Some of those utilities support passing a numerical value. Numbers are parse as `f32` so you can pass it any valid `f32`. If you use a fraction, it will compute the value as a percentage and clamp it to 100%.
 
 ```rust
-styled("m-50"); // a 50px margin
-styled("m-1.5"); // a 1.5px margin
-styled("m-1/2"); // a 1/2 or 50% margin. Any fraction will be converted to a percentage and clamped to 100%
-styled("m-auto"); // a Val::Auto margin
+use bevy_ui_styled_macro::styled;
+
+styled!("m-50"); // a 50px margin
+styled!("m-1.5"); // a 1.5px margin
+styled!("m-1/2"); // a 1/2 or 50% margin. Any fraction will be converted to a percentage and clamped to 100%
+styled!("m-auto"); // a Val::Auto margin
 ```
 
 **Warning**: In tailwind, decimal values are used to represent `em` values. Since bevy only supports percent and pixels I simply evaluate it as a pixel value. I don't know how bevy interprets a 0.5 pixel.
@@ -81,14 +93,11 @@ I also created a `colors` module that contains the default colors from tailwind.
 
 ## Extracting Styles
 
-If you don't like repeating the same classes multiple time, you can easily just store the output of the function in a variable and clone it whenever you want to duplicate a style.
-
-Since the styles are just a string parsed at runtime. If you need to share a style globally, you can simply define the string in a `const` and use that `const` as the argument.
+If you don't like repeating the same classes multiple time, you can easily just store the output of the macro in a variable and use it whenever you want to duplicate a style.
 
 ```rust
-const GLOBAL_STYLE: &str = "w-full h-full justify-center";
+use bevy::prelude::*;
+use bevy_ui_styled_macro::styled;
 
-fn foo() {
-    let bar = styled(GLOBAL_STYLE);
-}
+const GLOBAL_STYLE: Style = styled!("w-full h-full justify-center");
 ```

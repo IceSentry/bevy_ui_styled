@@ -13,6 +13,10 @@ bevy = { version = "0.9", default-features = false, features = [
     "render",
 ] }
 anyhow = "^1.0"
+bevy_ui_styled_macro = { path = "macros" }
 
 [dev-dependencies]
 bevy = "0.9"
+
+[workspace]
+members = ["macros"]

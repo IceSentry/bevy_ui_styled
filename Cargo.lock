@@ -787,6 +787,18 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bevy",
+ "bevy_ui_styled_macro",
+]
+
+[[package]]
+name = "bevy_ui_styled_macro"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

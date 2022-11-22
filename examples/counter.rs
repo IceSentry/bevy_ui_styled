@@ -76,7 +76,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Ui tree
     commands
         .spawn(NodeBundle {
-            style: styled("w-full h-full"),
+            style: styled!("w-full h-full"),
             ..default()
         })
         .with_children(|c| {
@@ -86,7 +86,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 color: WHITE,
             };
 
-            let btn = styled("w-full h-full m-auto justify-center items-center");
+            let btn = styled!("w-full h-full m-auto justify-center items-center");
 
             c.spawn((
                 ButtonBundle {
@@ -101,12 +101,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             });
 
             c.spawn(NodeBundle {
-                style: styled("w-1/3 shrink-0 justify-center items-center"),
+                style: styled!("w-1/3 shrink-0 justify-center items-center"),
                 ..default()
             })
             .with_children(|c| {
-                c.spawn(TextBundle::from_section("Count: ", text_style.clone()))
-                    .insert(Count(0));
+                c.spawn((
+                    TextBundle::from_section("Count: ", text_style.clone()),
+                    Count(0),
+                ));
             });
 
             c.spawn((
