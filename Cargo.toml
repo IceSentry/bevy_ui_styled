@@ -1,6 +1,6 @@
 [package]
 name = "bevy_ui_styled"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/IceSentry/bevy_ui_styled"
@@ -13,7 +13,7 @@ bevy = { version = "0.9", default-features = false, features = [
     "render",
 ] }
 anyhow = "^1.0"
-bevy_ui_styled_macros = { path = "macros", version = "0.1.0" }
+bevy_ui_styled_macros = { path = "macros", version = "0.2.0" }
 
 [dev-dependencies]
 bevy = "0.9"
