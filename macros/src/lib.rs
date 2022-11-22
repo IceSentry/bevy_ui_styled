@@ -7,6 +7,14 @@ use syn::{
     parse_macro_input, LitStr,
 };
 
+// TODO
+// StyledPlugin
+// system to handle changing color based on hover or focus
+// handle fonts automatically (FontRef)
+// support runtime values
+// try to support format strings instead of just raw strings
+// bg-color
+
 struct Input {
     style: LitStr,
 }
