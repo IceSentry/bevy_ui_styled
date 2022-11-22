@@ -48,7 +48,7 @@ The same example using bevy_ui_styled
 
 ```rust
 use bevy::prelude::*;
-use bevy_ui_styled_macro::styled;
+use bevy_ui_styled::styled;
 
 fn system(mut commands: Commands, asset_server: AssetServer) {
     commands
@@ -77,7 +77,7 @@ fn system(mut commands: Commands, asset_server: AssetServer) {
 Some of those utilities support passing a numerical value. Numbers are parse as `f32` so you can pass it any valid `f32`. If you use a fraction, it will compute the value as a percentage and clamp it to 100%.
 
 ```rust
-use bevy_ui_styled_macro::styled;
+use bevy_ui_styled::styled;
 
 styled!("m-50"); // a 50px margin
 styled!("m-1.5"); // a 1.5px margin
@@ -97,7 +97,7 @@ If you don't like repeating the same classes multiple time, you can easily just 
 
 ```rust
 use bevy::prelude::*;
-use bevy_ui_styled_macro::styled;
+use bevy_ui_styled::styled;
 
 const GLOBAL_STYLE: Style = styled!("w-full h-full justify-center");
 ```

@@ -1,5 +1,5 @@
 [package]
-name = "bevy_ui_styled_macro"
+name = "bevy_ui_styled_macros"
 version = "0.1.0"
 edition = "2021"
 
