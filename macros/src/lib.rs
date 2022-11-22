@@ -143,7 +143,7 @@ fn get_styled(style: &str) -> anyhow::Result<Style> {
     if style.is_empty() {
         return Ok(out);
     }
-    let styles: Vec<&str> = style.split(' ').collect();
+    let styles: Vec<&str> = style.split_whitespace().collect();
     for style in styles {
         match style {
             style if style.starts_with("flex-") => {
@@ -289,7 +289,7 @@ fn get_styled(style: &str) -> anyhow::Result<Style> {
                 out.max_size.height = get_val("max-h-", style)?;
             }
             // display
-            style if style.starts_with("hidden") => {
+            "hidden" => {
                 out.display = Display::None;
             }
             "flex" => {
@@ -351,28 +351,38 @@ fn get_styled(style: &str) -> anyhow::Result<Style> {
 /// Get the value from the string
 /// Support auto, raw pixel values and fractional values using `/`
 fn get_val(prefix: &str, style: &str) -> anyhow::Result<Val> {
+    let style = &style.replace(prefix, "");
     Ok(if style.ends_with("auto") {
         Val::Auto
     } else if style.contains('/') {
-        Val::Percent(parse_frac(prefix, style)?)
+        Val::Percent(parse_frac(style)?)
+    } else if style.contains('%') {
+        Val::Percent(parse_pct(style)?)
     } else {
-        Val::Px(parse_px(prefix, style)?)
+        Val::Px(parse_px(style)?)
     })
 }
 
 /// Parse raw pixel values
 /// Returns the computed value in f32
-fn parse_px(prefix: &str, style: &str) -> anyhow::Result<f32> {
+fn parse_px(style: &str) -> anyhow::Result<f32> {
     style
-        .replace(prefix, "")
         .parse::<f32>()
         .context(format!("Failed to parse px value: {style}"))
 }
 
+/// Parse raw pixel values
+/// Returns the computed value in f32
+fn parse_pct(style: &str) -> anyhow::Result<f32> {
+    style
+        .replace('%', "")
+        .parse::<f32>()
+        .context(format!("Failed to parse % value: {style}"))
+}
+
 /// Parse fractional values
 /// Returns the computed value in f32
-fn parse_frac(prefix: &str, style: &str) -> anyhow::Result<f32> {
-    let style = style.replace(prefix, "");
+fn parse_frac(style: &str) -> anyhow::Result<f32> {
     let vals: Vec<&str> = style.split('/').collect();
     let v0 = vals[0]
         .parse::<f32>()
@@ -386,22 +396,29 @@ fn parse_frac(prefix: &str, style: &str) -> anyhow::Result<f32> {
 
 #[cfg(test)]
 mod tests {
-    use super::{get_val, parse_frac, parse_px};
+    use super::{get_val, parse_frac, parse_pct, parse_px};
     use bevy::ui::Val;
 
     #[test]
     fn test_parse_px() {
-        assert_eq!(parse_px("", "0").unwrap(), 0.0);
-        assert_eq!(parse_px("", "50").unwrap(), 50.0);
-        assert_eq!(parse_px("", "50.0").unwrap(), 50.0);
+        assert_eq!(parse_px("0").unwrap(), 0.0);
+        assert_eq!(parse_px("50").unwrap(), 50.0);
+        assert_eq!(parse_px("50.0").unwrap(), 50.0);
+    }
+
+    #[test]
+    fn test_parse_pct() {
+        assert_eq!(parse_pct("0%").unwrap(), 0.0);
+        assert_eq!(parse_pct("50%").unwrap(), 50.0);
+        assert_eq!(parse_pct("50.0%").unwrap(), 50.0);
     }
 
     #[test]
     fn test_parse_percent() {
-        assert_eq!(parse_frac("", "1/2").unwrap(), 50.0);
-        assert_eq!(parse_frac("", "1.0/2.0").unwrap(), 50.0);
-        assert_eq!(parse_frac("", "1/1").unwrap(), 100.0);
-        assert_eq!(parse_frac("", "2/1").unwrap(), 100.0);
+        assert_eq!(parse_frac("1/2").unwrap(), 50.0);
+        assert_eq!(parse_frac("1.0/2.0").unwrap(), 50.0);
+        assert_eq!(parse_frac("1/1").unwrap(), 100.0);
+        assert_eq!(parse_frac("2/1").unwrap(), 100.0);
     }
 
     #[test]

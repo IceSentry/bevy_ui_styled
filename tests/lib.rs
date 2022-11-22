@@ -29,6 +29,35 @@ fn test_style() {
 }
 
 #[test]
+fn test_empty_default() {
+    assert_eq!(
+        styled!(""),
+        Style {
+            ..Default::default()
+        }
+    );
+}
+
+#[test]
+fn test_display() {
+    assert_eq!(
+        styled!("hidden"),
+        Style {
+            display: Display::None,
+            ..Default::default()
+        }
+    );
+
+    assert_eq!(
+        styled!("flex"),
+        Style {
+            display: Display::Flex,
+            ..Default::default()
+        }
+    );
+}
+
+#[test]
 fn test_margin() {
     assert_eq!(
         styled!("m-0"),
