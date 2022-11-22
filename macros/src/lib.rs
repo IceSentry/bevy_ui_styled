@@ -1,7 +1,10 @@
+mod quote_utils;
+
 use anyhow::Context;
 use bevy::prelude::*;
 use proc_macro::TokenStream;
 use quote::quote;
+use quote_utils::{quote_enum, quote_f32, quote_option, quote_size, quote_ui_rect, quote_val};
 use syn::{
     parse::{Parse, ParseStream, Result},
     parse_macro_input, LitStr,
@@ -26,67 +29,16 @@ impl Parse for Input {
     }
 }
 
-macro_rules! quote_enum {
-    ($prop: expr) => {{
-        let type_name = type_of(&$prop);
-        let type_name = type_name.split("::").last().unwrap();
-        let type_name: proc_macro2::TokenStream = type_name.parse().unwrap();
-        let value: proc_macro2::TokenStream = format!("{:?}", $prop).parse().unwrap();
-        quote!(bevy::ui::#type_name::#value)
-    }};
-}
+#[proc_macro]
+pub fn styled_bundle(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let Input { style } = parse_macro_input!(input);
 
-macro_rules! quote_option {
-    ($value: expr) => {{
-        match $value {
-            Some(value) => quote!(Some(#value)),
-            None => quote!(None),
-        }
-    }};
-}
+    let style = get_styled(&style.value()).expect("Failed to parse style string");
+    let style = get_style_quote(style);
 
-macro_rules! quote_f32 {
-    ($value: expr) => {{
-        let value: proc_macro2::TokenStream = format!("{}", $value).parse().unwrap();
-        quote!(#value as f32)
-    }};
-}
+    // TODO return a bundle with hover/pressed/focus/bg-color components, maybe even text stuff
 
-macro_rules! quote_val {
-    ($value: expr) => {{
-        let value: proc_macro2::TokenStream = format!("{:?}", $value).parse().unwrap();
-        quote!(bevy::ui::Val::#value)
-    }};
-}
-
-macro_rules! quote_ui_rect {
-    ($value: expr) => {{
-        let left = quote_val!($value.left);
-        let right = quote_val!($value.right);
-        let top = quote_val!($value.top);
-        let bottom = quote_val!($value.bottom);
-        quote!(bevy::ui::UiRect {
-            left: #left,
-            right: #right,
-            top: #top,
-            bottom: #bottom,
-        })
-    }};
-}
-
-macro_rules! quote_size {
-    ($value: expr) => {{
-        let width = quote_val!($value.width);
-        let height = quote_val!($value.height);
-        quote!(bevy::ui::Size {
-            width: #width,
-            height: #height,
-        })
-    }};
-}
-
-fn type_of<T>(_: &T) -> String {
-    std::any::type_name::<T>().to_string()
+    TokenStream::from(style)
 }
 
 /// Reads the given style string and creates a new Style struct corresponding to the string.
@@ -95,7 +47,12 @@ pub fn styled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let Input { style } = parse_macro_input!(input);
 
     let style = get_styled(&style.value()).expect("Failed to parse style string");
+    let style = get_style_quote(style);
 
+    TokenStream::from(style)
+}
+
+fn get_style_quote(style: Style) -> proc_macro2::TokenStream {
     let display = quote_enum!(style.display);
     let position_type = quote_enum!(style.position_type);
     let direction = quote_enum!(style.direction);
@@ -118,7 +75,7 @@ pub fn styled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let aspect_ratio = quote_option!(style.aspect_ratio.map(|x| quote_f32!(x)));
     let overflow = quote_enum!(style.overflow);
 
-    let expanded = quote! {
+    quote! {
         bevy::ui::Style {
             display: #display,
             position_type: #position_type,
@@ -142,8 +99,7 @@ pub fn styled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             aspect_ratio: #aspect_ratio,
             overflow: #overflow,
         }
-    };
-    TokenStream::from(expanded)
+    }
 }
 
 fn get_styled(style: &str) -> anyhow::Result<Style> {
