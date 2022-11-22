@@ -4,7 +4,7 @@ use anyhow::Context;
 use bevy::prelude::*;
 use proc_macro::TokenStream;
 use quote::quote;
-use quote_utils::{quote_enum, quote_f32, quote_option, quote_size, quote_ui_rect, quote_val};
+use quote_utils::{quote_color_rgb, quote_style};
 use syn::{
     parse::{Parse, ParseStream, Result},
     parse_macro_input, LitStr,
@@ -33,12 +33,20 @@ impl Parse for Input {
 pub fn styled_bundle(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let Input { style } = parse_macro_input!(input);
 
-    let style = get_styled(&style.value()).expect("Failed to parse style string");
-    let style = get_style_quote(style);
+    let (style, bg_color) = parse_style(&style.value()).expect("Failed to parse style string");
+
+    let style = quote_style(style);
+    let bg_color = quote_color_rgb(bg_color);
 
     // TODO return a bundle with hover/pressed/focus/bg-color components, maybe even text stuff
+    let expanded = quote! {
+        bevy_ui_styled::StyledBundle {
+            style: #style,
+            background_color: bevy::ui::BackgroundColor(#bg_color),
+        }
+    };
 
-    TokenStream::from(style)
+    TokenStream::from(expanded)
 }
 
 /// Reads the given style string and creates a new Style struct corresponding to the string.
@@ -46,66 +54,17 @@ pub fn styled_bundle(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 pub fn styled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let Input { style } = parse_macro_input!(input);
 
-    let style = get_styled(&style.value()).expect("Failed to parse style string");
-    let style = get_style_quote(style);
+    let (style, _bg_color) = parse_style(&style.value()).expect("Failed to parse style string");
+    let style = quote_style(style);
 
     TokenStream::from(style)
 }
 
-fn get_style_quote(style: Style) -> proc_macro2::TokenStream {
-    let display = quote_enum!(style.display);
-    let position_type = quote_enum!(style.position_type);
-    let direction = quote_enum!(style.direction);
-    let flex_direction = quote_enum!(style.flex_direction);
-    let flex_wrap = quote_enum!(style.flex_wrap);
-    let align_items = quote_enum!(style.align_items);
-    let align_self = quote_enum!(style.align_self);
-    let align_content = quote_enum!(style.align_content);
-    let justify_content = quote_enum!(style.justify_content);
-    let position = quote_ui_rect!(style.position);
-    let margin = quote_ui_rect!(style.margin);
-    let padding = quote_ui_rect!(style.padding);
-    let border = quote_ui_rect!(style.border);
-    let flex_grow = quote_f32!(style.flex_grow);
-    let flex_shrink = quote_f32!(style.flex_shrink);
-    let flex_basis = quote_val!(style.flex_basis);
-    let size = quote_size!(style.size);
-    let min_size = quote_size!(style.min_size);
-    let max_size = quote_size!(style.max_size);
-    let aspect_ratio = quote_option!(style.aspect_ratio.map(|x| quote_f32!(x)));
-    let overflow = quote_enum!(style.overflow);
-
-    quote! {
-        bevy::ui::Style {
-            display: #display,
-            position_type: #position_type,
-            direction: #direction,
-            flex_direction: #flex_direction,
-            flex_wrap: #flex_wrap,
-            align_items: #align_items,
-            align_self: #align_self,
-            align_content: #align_content,
-            justify_content: #justify_content,
-            position: #position,
-            margin: #margin,
-            padding: #padding,
-            border: #border,
-            flex_grow: #flex_grow,
-            flex_shrink: #flex_shrink,
-            flex_basis: #flex_basis,
-            size: #size,
-            min_size: #min_size,
-            max_size: #max_size,
-            aspect_ratio: #aspect_ratio,
-            overflow: #overflow,
-        }
-    }
-}
-
-fn get_styled(style: &str) -> anyhow::Result<Style> {
+fn parse_style(style: &str) -> anyhow::Result<(Style, Color)> {
     let mut out = Style::default();
+    let mut bg_color = Color::default();
     if style.is_empty() {
-        return Ok(out);
+        return Ok((out, bg_color));
     }
     let styles: Vec<&str> = style.split_whitespace().collect();
     for style in styles {
@@ -306,10 +265,14 @@ fn get_styled(style: &str) -> anyhow::Result<Style> {
             style if style.starts_with("inset-") => {
                 out.position = UiRect::all(get_val("inset-", style)?);
             }
+            style if style.starts_with("bg-") => {
+                // TODO parse color
+                bg_color = Color::GREEN;
+            }
             _ => unimplemented!("{style}"),
         }
     }
-    Ok(out)
+    Ok((out, bg_color))
 }
 
 /// Get the value from the string

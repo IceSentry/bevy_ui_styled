@@ -1,8 +1,9 @@
 use bevy::{prelude::*, winit::WinitSettings};
 use bevy_ui_styled::{
-    colors::{SLATE_500, SLATE_900, WHITE},
+    colors::{SLATE_500, WHITE},
     styled,
 };
+use bevy_ui_styled_macros::styled_bundle;
 
 fn main() {
     App::new()
@@ -25,8 +26,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Ui tree
     commands
         .spawn(NodeBundle::default())
-        .insert(styled!("w-90% h-90% m-auto p-15 justify-between flex-col"))
-        .insert(BackgroundColor(SLATE_900))
+        .insert(styled_bundle!(
+            "w-90% h-90% m-auto p-15 justify-between flex-col bg-green"
+        ))
         .with_children(|c| {
             c.spawn(NodeBundle::default())
                 .insert(styled!("h-full w-96% mb-4 justify-center items-center"))
