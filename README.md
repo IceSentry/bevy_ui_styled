@@ -81,7 +81,8 @@ use bevy_ui_styled::styled;
 
 styled!("m-50"); // a 50px margin
 styled!("m-1.5"); // a 1.5px margin
-styled!("m-1/2"); // a 1/2 or 50% margin. Any fraction will be converted to a percentage and clamped to 100%
+styled!("m-1/2"); // a 1/2 margin. Any fraction will be converted to a percentage and clamped to 100%
+styled!("m-50%"); // a 50% margin
 styled!("m-auto"); // a Val::Auto margin
 ```
 
