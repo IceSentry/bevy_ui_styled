@@ -6,11 +6,11 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/IceSentry/bevy_ui_styled"
 
 [dependencies]
-bevy = { git = "https://github.com/bevyengine/bevy", default-features = false, features = [
+bevy = { version = "0.9", default-features = false, features = [
     "bevy_ui",
     "render",
 ] }
 anyhow = "^1.0"
 
 [dev-dependencies]
-bevy = { git = "https://github.com/bevyengine/bevy" }
+bevy = "0.9"

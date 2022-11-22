@@ -1,6 +1,6 @@
 # bevy_ui_styled
 
-Utility function that let's you define a bevy_ui `Style` component with tailwindcss inspired string.
+Utility function that let's you define a bevy_ui `Style` component with `tailwindcss` inspired syntax.
 
 If you are already familiar with tailwind classes just use them and it will _probably_ work. As long as you only use the layout related classes. Not all features are supported, for example, bevy currently only supports flexbox. If you don't know tailwind but know bevy I'd recommend using the search in the tailwind docs which will give you a class that will _probably_ work. It's not actually tailwind, just based on the same principles so plenty of things might not behave as expected.
 
@@ -14,7 +14,7 @@ This is the button example in bevy 0.8
 
 ```rust
 commands
-    .spawn_bundle(ButtonBundle {
+    .spawn(ButtonBundle {
         style: Style {
             size: Size::new(Val::Px(150.0), Val::Px(65.0)),
             // center button
@@ -25,7 +25,7 @@ commands
             align_items: AlignItems::Center,
             ..default()
         },
-        color: NORMAL_BUTTON.into(),
+        background_color: NORMAL_BUTTON.into(),
         ..default()
     })
     .with_children(|parent| {
@@ -44,10 +44,10 @@ The same example using bevy_ui_styled
 
 ```rust
 commands
-    .spawn_bundle(ButtonBundle {
+    .spawn(ButtonBundle {
         // This will return a Style component that is identical to the one above
         style: styled("w-150 h-65 m-auto justify-center items-center"),
-        color: NORMAL_BUTTON.into(),
+        background_color: NORMAL_BUTTON.into(),
         ..default()
     })
     .with_children(|parent| {

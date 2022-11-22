@@ -1,12 +1,21 @@
+#![doc = include_str!("../README.md")]
+
 use anyhow::Context;
 use bevy::prelude::*;
 
 pub mod colors;
 
+/// Reads the given style string and creates a new Style struct corresponding to the string.
+///
+/// Simple infallible wrapper around [`get_styled()`]
+///
+/// ## Panics
+/// If the string is not a valid style it will panic.
 pub fn styled(style: &str) -> Style {
     get_styled(style).expect("Failed to parse styled string")
 }
 
+/// Reads the given style string and creates a new Style struct corresponding to the string
 pub fn get_styled(style: &str) -> anyhow::Result<Style> {
     let styles: Vec<&str> = style.split(' ').collect();
     let mut out = Style::default();
@@ -199,25 +208,31 @@ pub fn get_styled(style: &str) -> anyhow::Result<Style> {
     Ok(out)
 }
 
-fn get_val(replace: &str, style: &str) -> anyhow::Result<Val> {
+/// Get the value from the string
+/// Support auto, raw pixel values and fractional values using `/`
+fn get_val(prefix: &str, style: &str) -> anyhow::Result<Val> {
     Ok(if style.ends_with("auto") {
         Val::Auto
     } else if style.contains('/') {
-        Val::Percent(parse_frac(replace, style)?)
+        Val::Percent(parse_frac(prefix, style)?)
     } else {
-        Val::Px(parse_px(replace, style)?)
+        Val::Px(parse_px(prefix, style)?)
     })
 }
 
-fn parse_px(replace: &str, style: &str) -> anyhow::Result<f32> {
+/// Parse raw pixel values
+/// Returns the computed value in f32
+fn parse_px(prefix: &str, style: &str) -> anyhow::Result<f32> {
     style
-        .replace(replace, "")
+        .replace(prefix, "")
         .parse::<f32>()
         .context(format!("Failed to parse px value: {style}"))
 }
 
-fn parse_frac(replace: &str, style: &str) -> anyhow::Result<f32> {
-    let style = style.replace(replace, "");
+/// Parse fractional values
+/// Returns the computed value in f32
+fn parse_frac(prefix: &str, style: &str) -> anyhow::Result<f32> {
+    let style = style.replace(prefix, "");
     let vals: Vec<&str> = style.split('/').collect();
     let v0 = vals[0]
         .parse::<f32>()

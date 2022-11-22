@@ -3,7 +3,7 @@
 
 use bevy::{prelude::*, winit::WinitSettings};
 use bevy_ui_styled::{
-    colors::{SLATE_500, SLATE_600, SLATE_700, TRANSPARENT, WHITE},
+    colors::{SLATE_500, SLATE_600, SLATE_700, WHITE},
     styled,
 };
 
@@ -33,7 +33,7 @@ fn on_button_interact(
     mut interaction_query: Query<
         (
             &Interaction,
-            &mut UiColor,
+            &mut BackgroundColor,
             Option<&Increment>,
             Option<&Decrement>,
         ),
@@ -70,11 +70,13 @@ fn on_count_changed(mut count_query: Query<(&mut Text, &Count), Changed<Count>>)
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    // Camera
+    commands.spawn(Camera2dBundle::default());
+
+    // Ui tree
     commands
-        .spawn_bundle(NodeBundle {
+        .spawn(NodeBundle {
             style: styled("w-full h-full"),
-            color: TRANSPARENT.into(),
             ..default()
         })
         .with_children(|c| {
@@ -86,34 +88,37 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
             let btn = styled("w-full h-full m-auto justify-center items-center");
 
-            c.spawn_bundle(ButtonBundle {
-                style: btn.clone(),
-                color: BUTTON_COLOR.into(),
-                ..default()
-            })
-            .insert(Decrement)
+            c.spawn((
+                ButtonBundle {
+                    style: btn.clone(),
+                    background_color: BUTTON_COLOR.into(),
+                    ..default()
+                },
+                Decrement,
+            ))
             .with_children(|c| {
-                c.spawn_bundle(TextBundle::from_section("-", text_style.clone()));
+                c.spawn(TextBundle::from_section("-", text_style.clone()));
             });
 
-            c.spawn_bundle(NodeBundle {
+            c.spawn(NodeBundle {
                 style: styled("w-1/3 shrink-0 justify-center items-center"),
-                color: TRANSPARENT.into(),
                 ..default()
             })
             .with_children(|c| {
-                c.spawn_bundle(TextBundle::from_section("Count: ", text_style.clone()))
+                c.spawn(TextBundle::from_section("Count: ", text_style.clone()))
                     .insert(Count(0));
             });
 
-            c.spawn_bundle(ButtonBundle {
-                style: btn,
-                color: BUTTON_COLOR.into(),
-                ..default()
-            })
-            .insert(Increment)
+            c.spawn((
+                ButtonBundle {
+                    style: btn,
+                    background_color: BUTTON_COLOR.into(),
+                    ..default()
+                },
+                Increment,
+            ))
             .with_children(|c| {
-                c.spawn_bundle(TextBundle::from_section("+", text_style.clone()));
+                c.spawn(TextBundle::from_section("+", text_style.clone()));
             });
         });
 }
