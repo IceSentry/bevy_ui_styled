@@ -77,7 +77,7 @@ styled("m-auto"); // a Val::Auto margin
 
 ## Colors
 
-I also created a `colors` module that containes the default colors from tailwind. Unlike tailwind these aren't easily customizable, but you can just use a rust `const CUSTOM_COLOR: Color` to do that. This is just to have some basic color to get you started.
+I also created a `colors` module that contains the default colors from tailwind. Unlike tailwind these aren't easily customizable, but you can just use `const CUSTOM_COLOR: Color` to do that. This is just to have some basic color to get you started.
 
 ## Extracting Styles
 
