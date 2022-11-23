@@ -104,23 +104,44 @@ fn parse_styled(style: &str) -> anyhow::Result<ParseResult> {
     if style.is_empty() {
         return Ok(result);
     }
+
     let styles: Vec<&str> = style.split_whitespace().collect();
+    let mut hover_styles = vec![];
+    let mut clicked_styles = vec![];
     for style in styles {
         match style {
-            style if style.starts_with("hover:") => parse_style_element(
-                &style.replace("hover:", ""),
-                &mut result.hovered_style,
-                &mut result.hovered_bg_color,
-            )?,
-            style if style.starts_with("clicked:") => parse_style_element(
-                &style.replace("clicked:", ""),
-                &mut result.clicked_style,
-                &mut result.clicked_bg_color,
-            )?,
+            style if style.starts_with("hover:") => {
+                hover_styles.push(style.replace("hover:", ""));
+            }
+            style if style.starts_with("clicked:") => {
+                clicked_styles.push(style.replace("clicked:", ""));
+            }
             // no modifier
             _ => parse_style_element(style, &mut result.base_style, &mut result.base_bg_color)?,
         }
     }
+
+    // For hover and clicked state, we need to make sure the style is also the base style not just default values
+    result.hovered_style = result.base_style.clone();
+    result.hovered_bg_color = result.base_bg_color;
+    for style in hover_styles {
+        parse_style_element(
+            &style,
+            &mut result.hovered_style,
+            &mut result.hovered_bg_color,
+        )?;
+    }
+
+    result.clicked_style = result.base_style.clone();
+    result.clicked_bg_color = result.base_bg_color;
+    for style in clicked_styles {
+        parse_style_element(
+            &style,
+            &mut result.clicked_style,
+            &mut result.clicked_bg_color,
+        )?;
+    }
+
     Ok(result)
 }
 

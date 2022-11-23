@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_ui_styled::styled;
+use bevy_ui_styled_macros::styled_bundle;
 
 #[test]
 fn test_style() {
@@ -129,4 +130,38 @@ fn test_aspect_ratio() {
             ..Default::default()
         }
     );
+}
+
+#[test]
+fn test_macro_bundle() {
+    let (style, base_style, hovered_style, clicked_style) = styled_bundle!("flex");
+    assert_eq!(
+        style,
+        Style {
+            display: Display::Flex,
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(style, base_style.style);
+    assert_eq!(base_style.color, None);
+
+    assert_eq!(style, hovered_style.style);
+    assert_eq!(hovered_style.color, None);
+
+    assert_eq!(style, clicked_style.style);
+    assert_eq!(clicked_style.color, None);
+
+    let (style, bg_color, base_style, hovered_style, clicked_style) =
+        styled_bundle!("bg-red hover:bg-blue");
+
+    assert_eq!(style, base_style.style);
+    assert_eq!(base_style.color, Some(Color::RED));
+    assert_eq!(bg_color.0, Color::RED);
+
+    assert_eq!(style, hovered_style.style);
+    assert_eq!(hovered_style.color, Some(Color::BLUE));
+
+    assert_eq!(style, clicked_style.style);
+    assert_eq!(clicked_style.color, Some(Color::RED));
 }
