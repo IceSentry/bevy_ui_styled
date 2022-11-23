@@ -89,7 +89,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
             c.spawn((ButtonBundle::default(), Increment))
                 .insert(styled_bundle!(
-                    "w-full h-full m-auto justify-center items-center bg-green hover:bg-red clicked:bg-blue"
+                    "w-full h-full m-auto justify-center items-center bg-green hover:bg-red clicked:bg-blue hover:h-50%"
                 ))
                 .with_children(|c| {
                     c.spawn(TextBundle::from_section("+", text_style.clone()));
