@@ -3,8 +3,8 @@ mod quote_utils;
 use anyhow::Context;
 use bevy::prelude::*;
 use proc_macro::TokenStream;
-use quote::quote;
-use quote_utils::{quote_color_rgb, quote_style};
+use quote::{quote, TokenStreamExt};
+use quote_utils::{quote_color_rgba, quote_option, quote_style};
 use syn::{
     parse::{Parse, ParseStream, Result},
     parse_macro_input, LitStr,
@@ -29,255 +29,314 @@ impl Parse for Input {
     }
 }
 
+/// Reads the given styled string and creates a bundle with the components used by the StyledPlugin
+/// for things like hover/clicked states, background color and text styling
 #[proc_macro]
 pub fn styled_bundle(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let Input { style } = parse_macro_input!(input);
 
-    let (style, bg_color) = parse_style(&style.value()).expect("Failed to parse style string");
+    let result = parse_styled(&style.value()).expect("Failed to parse styled string");
 
-    let style = quote_style(style);
-    let bg_color = quote_color_rgb(bg_color);
+    let mut tokens = vec![];
 
-    // TODO return a bundle with hover/pressed/focus/bg-color components, maybe even text stuff
-    let expanded = quote! {
-        bevy_ui_styled::StyledBundle {
-            style: #style,
-            background_color: bevy::ui::BackgroundColor(#bg_color),
-        }
-    };
+    // Base
+    let style = quote_style(result.base_style);
+    tokens.push(style.clone());
 
-    TokenStream::from(expanded)
+    let bg_color = quote_option(result.base_bg_color.map(|color| {
+        let color = quote_color_rgba(color);
+        tokens.push(quote!(bevy::ui::BackgroundColor(#color)));
+        color
+    }));
+
+    let base_style = quote!(bevy_ui_styled::BaseStyle {
+        style: #style,
+        color: #bg_color,
+    });
+    tokens.push(base_style);
+
+    // Hovered
+    let hovered_style = quote_style(result.hovered_style);
+    let hovered_bg_color = quote_option(result.hovered_bg_color.map(quote_color_rgba));
+    let hovered_style = quote!(bevy_ui_styled::HoveredStyle {
+        style: #hovered_style,
+        color: #hovered_bg_color,
+    });
+    tokens.push(hovered_style);
+
+    // Clicked
+    let clicked_style = quote_style(result.clicked_style);
+    let clicked_bg_color = quote_option(result.clicked_bg_color.map(quote_color_rgba));
+    let clicked_style = quote!(bevy_ui_styled::ClickedStyle {
+        style: #clicked_style,
+        color: #clicked_bg_color,
+    });
+    tokens.push(clicked_style);
+
+    let mut stream = proc_macro2::TokenStream::new();
+    stream.append_separated(tokens, quote!(,));
+    TokenStream::from(quote!((#stream)))
 }
 
-/// Reads the given style string and creates a new Style struct corresponding to the string.
+/// Reads the given styled string and creates a new Style struct corresponding to the string.
 #[proc_macro]
 pub fn styled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let Input { style } = parse_macro_input!(input);
 
-    let (style, _bg_color) = parse_style(&style.value()).expect("Failed to parse style string");
-    let style = quote_style(style);
+    let result = parse_styled(&style.value()).expect("Failed to parse styled string");
+    let style = quote_style(result.base_style);
 
     TokenStream::from(style)
 }
 
-fn parse_style(style: &str) -> anyhow::Result<(Style, Color)> {
-    let mut out = Style::default();
-    let mut bg_color = Color::default();
+#[derive(Default)]
+struct ParseResult {
+    base_style: Style,
+    base_bg_color: Option<Color>,
+    hovered_style: Style,
+    hovered_bg_color: Option<Color>,
+    clicked_style: Style,
+    clicked_bg_color: Option<Color>,
+}
+
+fn parse_styled(style: &str) -> anyhow::Result<ParseResult> {
+    let mut result = ParseResult::default();
     if style.is_empty() {
-        return Ok((out, bg_color));
+        return Ok(result);
     }
     let styles: Vec<&str> = style.split_whitespace().collect();
     for style in styles {
         match style {
-            style if style.starts_with("flex-") => {
-                match style {
-                    // direction
-                    "flex-col" => out.flex_direction = FlexDirection::Column,
-                    "flex-col-reverse" => out.flex_direction = FlexDirection::ColumnReverse,
-                    "flex-row" => out.flex_direction = FlexDirection::Row,
-                    "flex-row-reverse" => out.flex_direction = FlexDirection::RowReverse,
-                    // wrap
-                    "flex-wrap" => out.flex_wrap = FlexWrap::Wrap,
-                    "flex-wrap-reverse" => out.flex_wrap = FlexWrap::WrapReverse,
-                    "flex-nowrap" => out.flex_wrap = FlexWrap::NoWrap,
-                    _ => unimplemented!("{style}"),
-                }
-            }
-            style if style.starts_with("justify-") => {
-                out.justify_content = match style {
-                    "justify-start" => JustifyContent::FlexStart,
-                    "justify-end" => JustifyContent::FlexEnd,
-                    "justify-center" => JustifyContent::Center,
-                    "justify-between" => JustifyContent::SpaceBetween,
-                    "justify-around" => JustifyContent::SpaceAround,
-                    "justify-evenly" => JustifyContent::SpaceEvenly,
-                    _ => unimplemented!("{style}"),
-                }
-            }
-            style if style.starts_with("items-") => {
-                out.align_items = match style {
-                    "items-start" => AlignItems::FlexStart,
-                    "items-end" => AlignItems::FlexEnd,
-                    "items-center" => AlignItems::Center,
-                    "items-baseline" => AlignItems::Baseline,
-                    "items-stretch" => AlignItems::Stretch,
-                    _ => unimplemented!("{style}"),
-                }
-            }
-            style if style.starts_with("overflow-") => {
-                out.overflow = match style {
-                    "overflow-hidden" => Overflow::Hidden,
-                    "overflow-visible" => Overflow::Visible,
-                    _ => unimplemented!("{style}"),
-                }
-            }
-            style if style.starts_with("aspect-") => {
-                out.aspect_ratio = match style {
-                    "aspect-auto" => None,
-                    "aspect-square" => Some(1.0),
-                    "aspect-video" => Some(16.0 / 9.0),
-                    _ => unimplemented!("{style}"),
-                }
-            }
-            //margin
-            style if style.starts_with("mx-") => {
-                let val = get_val("mx-", style)?;
-                out.margin.left = val;
-                out.margin.right = val;
-            }
-            style if style.starts_with("my-") => {
-                let val = get_val("my-", style)?;
-                out.margin.top = val;
-                out.margin.bottom = val;
-            }
-            style if style.starts_with("mt-") => {
-                out.margin.top = get_val("mt-", style)?;
-            }
-            style if style.starts_with("mr-") => {
-                out.margin.right = get_val("mr-", style)?;
-            }
-            style if style.starts_with("mb-") => {
-                out.margin.bottom = get_val("mb-", style)?;
-            }
-            style if style.starts_with("ml-") => {
-                out.margin.left = get_val("ml-", style)?;
-            }
-            style if style.starts_with("m-") => {
-                out.margin = UiRect::all(get_val("m-", style)?);
-            }
-            // padding
-            style if style.starts_with("px-") => {
-                let val = get_val("px-", style)?;
-                out.padding.left = val;
-                out.padding.right = val;
-            }
-            style if style.starts_with("py-") => {
-                let val = get_val("py-", style)?;
-                out.padding.top = val;
-                out.padding.bottom = val;
-            }
-            style if style.starts_with("pt-") => {
-                out.padding.top = get_val("pt-", style)?;
-            }
-            style if style.starts_with("pr-") => {
-                out.padding.right = get_val("pr-", style)?;
-            }
-            style if style.starts_with("pb-") => {
-                out.padding.bottom = get_val("pb-", style)?;
-            }
-            style if style.starts_with("pl-") => {
-                out.padding.left = get_val("pl-", style)?;
-            }
-            style if style.starts_with("p-") => {
-                out.padding = UiRect::all(get_val("p-", style)?);
-            }
-            // width
-            "w-auto" => {
-                out.size.width = Val::Auto;
-            }
-            "w-full" => {
-                out.size.width = Val::Percent(100.0);
-            }
-            style if style.starts_with("w-") => {
-                out.size.width = get_val("w-", style)?;
-            }
-            // max-width
-            "max-w-auto" => {
-                out.max_size.width = Val::Auto;
-            }
-            "max-w-full" => {
-                out.max_size.width = Val::Percent(100.0);
-            }
-            style if style.starts_with("max-w-") => {
-                out.max_size.width = get_val("max-w-", style)?;
-            }
-            // height
-            "h-auto" => {
-                out.size.height = Val::Auto;
-            }
-            "h-full" => {
-                out.size.height = Val::Percent(100.0);
-            }
-            style if style.starts_with("h-") => {
-                out.size.height = get_val("h-", style)?;
-            }
-            // max-height
-            "max-h-auto" => {
-                out.max_size.height = Val::Auto;
-            }
-            "max-h-full" => {
-                out.max_size.height = Val::Percent(100.0);
-            }
-            style if style.starts_with("max-h-") => {
-                out.max_size.height = get_val("max-h-", style)?;
-            }
-            // display
-            "hidden" => {
-                out.display = Display::None;
-            }
-            "flex" => {
-                out.display = Display::Flex;
-            }
-            // Position type
-            "absolute" => {
-                out.position_type = PositionType::Absolute;
-            }
-            "relative" => {
-                out.position_type = PositionType::Relative;
-            }
-            // grow
-            "grow" => {
-                out.flex_grow = 1.0;
-            }
-            "grow-0" => {
-                out.flex_grow = 0.0;
-            }
-            // shrink
-            "shrink" => {
-                out.flex_shrink = 1.0;
-            }
-            "shrink-0" => {
-                out.flex_shrink = 0.0;
-            }
-            // position
-            style if style.starts_with("top-") => {
-                out.position.top = get_val("top-", style)?;
-            }
-            style if style.starts_with("right-") => {
-                out.position.right = get_val("right-", style)?;
-            }
-            style if style.starts_with("bottom-") => {
-                out.position.bottom = get_val("bottom-", style)?;
-            }
-            style if style.starts_with("left-") => {
-                out.position.left = get_val("left-", style)?;
-            }
-            style if style.starts_with("inset-y-") => {
-                let val = get_val("inset-y-", style)?;
-                out.position.left = val;
-                out.position.right = val;
-            }
-            style if style.starts_with("inset-x-") => {
-                let val = get_val("inset-x-", style)?;
-                out.position.left = val;
-                out.position.right = val;
-            }
-            style if style.starts_with("inset-") => {
-                out.position = UiRect::all(get_val("inset-", style)?);
-            }
-            style if style.starts_with("bg-") => {
-                // TODO parse color
-                bg_color = Color::GREEN;
-            }
-            _ => unimplemented!("{style}"),
+            style if style.starts_with("hover:") => parse_style_element(
+                &style.replace("hover:", ""),
+                &mut result.hovered_style,
+                &mut result.hovered_bg_color,
+            )?,
+            style if style.starts_with("clicked:") => parse_style_element(
+                &style.replace("clicked:", ""),
+                &mut result.clicked_style,
+                &mut result.clicked_bg_color,
+            )?,
+            // no modifier
+            _ => parse_style_element(style, &mut result.base_style, &mut result.base_bg_color)?,
         }
     }
-    Ok((out, bg_color))
+    Ok(result)
+}
+
+fn parse_style_element(
+    style: &str,
+    out: &mut Style,
+    bg_color: &mut Option<Color>,
+) -> anyhow::Result<()> {
+    match style {
+        style if style.starts_with("flex-") => {
+            match style {
+                // direction
+                "flex-col" => out.flex_direction = FlexDirection::Column,
+                "flex-col-reverse" => out.flex_direction = FlexDirection::ColumnReverse,
+                "flex-row" => out.flex_direction = FlexDirection::Row,
+                "flex-row-reverse" => out.flex_direction = FlexDirection::RowReverse,
+                // wrap
+                "flex-wrap" => out.flex_wrap = FlexWrap::Wrap,
+                "flex-wrap-reverse" => out.flex_wrap = FlexWrap::WrapReverse,
+                "flex-nowrap" => out.flex_wrap = FlexWrap::NoWrap,
+                _ => unimplemented!("{style}"),
+            }
+        }
+        style if style.starts_with("justify-") => {
+            out.justify_content = match style {
+                "justify-start" => JustifyContent::FlexStart,
+                "justify-end" => JustifyContent::FlexEnd,
+                "justify-center" => JustifyContent::Center,
+                "justify-between" => JustifyContent::SpaceBetween,
+                "justify-around" => JustifyContent::SpaceAround,
+                "justify-evenly" => JustifyContent::SpaceEvenly,
+                _ => unimplemented!("{style}"),
+            }
+        }
+        style if style.starts_with("items-") => {
+            out.align_items = match style {
+                "items-start" => AlignItems::FlexStart,
+                "items-end" => AlignItems::FlexEnd,
+                "items-center" => AlignItems::Center,
+                "items-baseline" => AlignItems::Baseline,
+                "items-stretch" => AlignItems::Stretch,
+                _ => unimplemented!("{style}"),
+            }
+        }
+        style if style.starts_with("overflow-") => {
+            out.overflow = match style {
+                "overflow-hidden" => Overflow::Hidden,
+                "overflow-visible" => Overflow::Visible,
+                _ => unimplemented!("{style}"),
+            }
+        }
+        style if style.starts_with("aspect-") => {
+            out.aspect_ratio = match style {
+                "aspect-auto" => None,
+                "aspect-square" => Some(1.0),
+                "aspect-video" => Some(16.0 / 9.0),
+                _ => unimplemented!("{style}"),
+            }
+        }
+        //margin
+        style if style.starts_with("mx-") => {
+            let val = parse_val("mx-", style)?;
+            out.margin.left = val;
+            out.margin.right = val;
+        }
+        style if style.starts_with("my-") => {
+            let val = parse_val("my-", style)?;
+            out.margin.top = val;
+            out.margin.bottom = val;
+        }
+        style if style.starts_with("mt-") => {
+            out.margin.top = parse_val("mt-", style)?;
+        }
+        style if style.starts_with("mr-") => {
+            out.margin.right = parse_val("mr-", style)?;
+        }
+        style if style.starts_with("mb-") => {
+            out.margin.bottom = parse_val("mb-", style)?;
+        }
+        style if style.starts_with("ml-") => {
+            out.margin.left = parse_val("ml-", style)?;
+        }
+        style if style.starts_with("m-") => {
+            out.margin = UiRect::all(parse_val("m-", style)?);
+        }
+        // padding
+        style if style.starts_with("px-") => {
+            let val = parse_val("px-", style)?;
+            out.padding.left = val;
+            out.padding.right = val;
+        }
+        style if style.starts_with("py-") => {
+            let val = parse_val("py-", style)?;
+            out.padding.top = val;
+            out.padding.bottom = val;
+        }
+        style if style.starts_with("pt-") => {
+            out.padding.top = parse_val("pt-", style)?;
+        }
+        style if style.starts_with("pr-") => {
+            out.padding.right = parse_val("pr-", style)?;
+        }
+        style if style.starts_with("pb-") => {
+            out.padding.bottom = parse_val("pb-", style)?;
+        }
+        style if style.starts_with("pl-") => {
+            out.padding.left = parse_val("pl-", style)?;
+        }
+        style if style.starts_with("p-") => {
+            out.padding = UiRect::all(parse_val("p-", style)?);
+        }
+        // width
+        "w-auto" => {
+            out.size.width = Val::Auto;
+        }
+        "w-full" => {
+            out.size.width = Val::Percent(100.0);
+        }
+        style if style.starts_with("w-") => {
+            out.size.width = parse_val("w-", style)?;
+        }
+        // max-width
+        "max-w-auto" => {
+            out.max_size.width = Val::Auto;
+        }
+        "max-w-full" => {
+            out.max_size.width = Val::Percent(100.0);
+        }
+        style if style.starts_with("max-w-") => {
+            out.max_size.width = parse_val("max-w-", style)?;
+        }
+        // height
+        "h-auto" => {
+            out.size.height = Val::Auto;
+        }
+        "h-full" => {
+            out.size.height = Val::Percent(100.0);
+        }
+        style if style.starts_with("h-") => {
+            out.size.height = parse_val("h-", style)?;
+        }
+        // max-height
+        "max-h-auto" => {
+            out.max_size.height = Val::Auto;
+        }
+        "max-h-full" => {
+            out.max_size.height = Val::Percent(100.0);
+        }
+        style if style.starts_with("max-h-") => {
+            out.max_size.height = parse_val("max-h-", style)?;
+        }
+        // display
+        "hidden" => {
+            out.display = Display::None;
+        }
+        "flex" => {
+            out.display = Display::Flex;
+        }
+        // Position type
+        "absolute" => {
+            out.position_type = PositionType::Absolute;
+        }
+        "relative" => {
+            out.position_type = PositionType::Relative;
+        }
+        // grow
+        "grow" => {
+            out.flex_grow = 1.0;
+        }
+        "grow-0" => {
+            out.flex_grow = 0.0;
+        }
+        // shrink
+        "shrink" => {
+            out.flex_shrink = 1.0;
+        }
+        "shrink-0" => {
+            out.flex_shrink = 0.0;
+        }
+        // position
+        style if style.starts_with("top-") => {
+            out.position.top = parse_val("top-", style)?;
+        }
+        style if style.starts_with("right-") => {
+            out.position.right = parse_val("right-", style)?;
+        }
+        style if style.starts_with("bottom-") => {
+            out.position.bottom = parse_val("bottom-", style)?;
+        }
+        style if style.starts_with("left-") => {
+            out.position.left = parse_val("left-", style)?;
+        }
+        style if style.starts_with("inset-y-") => {
+            let val = parse_val("inset-y-", style)?;
+            out.position.left = val;
+            out.position.right = val;
+        }
+        style if style.starts_with("inset-x-") => {
+            let val = parse_val("inset-x-", style)?;
+            out.position.left = val;
+            out.position.right = val;
+        }
+        style if style.starts_with("inset-") => {
+            out.position = UiRect::all(parse_val("inset-", style)?);
+        }
+        style if style.starts_with("bg-") => {
+            bg_color.replace(parse_color_name(&style.replace("bg-", "")));
+        }
+        _ => unimplemented!("{style}"),
+    };
+    Ok(())
 }
 
 /// Get the value from the string
 /// Support auto, raw pixel values and fractional values using `/`
-fn get_val(prefix: &str, style: &str) -> anyhow::Result<Val> {
+fn parse_val(prefix: &str, style: &str) -> anyhow::Result<Val> {
     let style = &style.replace(prefix, "");
     Ok(if style.ends_with("auto") {
         Val::Auto
@@ -321,9 +380,19 @@ fn parse_frac(style: &str) -> anyhow::Result<f32> {
     Ok(((v0 / v1) * 100.0).clamp(0.0, 100.0))
 }
 
+fn parse_color_name(color: &str) -> Color {
+    match color {
+        color if color.starts_with("transparent") => Color::NONE,
+        color if color.starts_with("red") => Color::RED,
+        color if color.starts_with("green") => Color::GREEN,
+        color if color.starts_with("blue") => Color::BLUE,
+        _ => unimplemented!("Unknown colors: {color}"),
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{get_val, parse_frac, parse_pct, parse_px};
+    use super::{parse_frac, parse_pct, parse_px, parse_val};
     use bevy::ui::Val;
 
     #[test]
@@ -350,9 +419,9 @@ mod tests {
 
     #[test]
     fn test_get_val() {
-        assert_eq!(get_val("", "1/2").unwrap(), Val::Percent(50.0));
-        assert_eq!(get_val("", "50").unwrap(), Val::Px(50.0));
-        assert_eq!(get_val("", "auto").unwrap(), Val::Auto);
-        assert!(get_val("", "hello").is_err());
+        assert_eq!(parse_val("", "1/2").unwrap(), Val::Percent(50.0));
+        assert_eq!(parse_val("", "50").unwrap(), Val::Px(50.0));
+        assert_eq!(parse_val("", "auto").unwrap(), Val::Auto);
+        assert!(parse_val("", "hello").is_err());
     }
 }

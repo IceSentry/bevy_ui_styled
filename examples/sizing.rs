@@ -27,7 +27,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn(NodeBundle::default())
         .insert(styled_bundle!(
-            "w-90% h-90% m-auto p-15 justify-between flex-col bg-green"
+            "w-90% h-90% m-auto p-15 justify-between flex-col bg-blue"
         ))
         .with_children(|c| {
             c.spawn(NodeBundle::default())

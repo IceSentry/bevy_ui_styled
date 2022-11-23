@@ -7,9 +7,9 @@ use bevy::{
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 
-pub(crate) fn quote_color_rgb(color: Color) -> TokenStream {
-    let [r, g, b, _a] = color.as_rgba_f32();
-    quote!(bevy::prelude::Color::rgb(#r, #g, #b))
+pub(crate) fn quote_color_rgba(color: Color) -> TokenStream {
+    let [r, g, b, a] = color.as_rgba_f32();
+    quote!(bevy::prelude::Color::rgba(#r, #g, #b, #a))
 }
 
 pub(crate) fn quote_style(style: Style) -> TokenStream {
@@ -32,7 +32,7 @@ pub(crate) fn quote_style(style: Style) -> TokenStream {
     let size = quote_size(style.size);
     let min_size = quote_size(style.min_size);
     let max_size = quote_size(style.max_size);
-    let aspect_ratio = quote_option(style.aspect_ratio.map(quote_f32));
+    let aspect_ratio = quote_option(style.aspect_ratio);
     let overflow = quote_enum(style.overflow);
 
     quote! {
@@ -62,19 +62,19 @@ pub(crate) fn quote_style(style: Style) -> TokenStream {
     }
 }
 
+pub fn quote_option<T: ToTokens>(opt: Option<T>) -> TokenStream {
+    match opt {
+        Some(value) => quote!(Some(#value)),
+        None => quote!(None),
+    }
+}
+
 fn quote_enum<T: Debug>(value: T) -> TokenStream {
     let type_name = std::any::type_name::<T>().to_string();
     let type_name = type_name.split("::").last().unwrap();
     let type_name: proc_macro2::TokenStream = type_name.parse().unwrap();
     let value: proc_macro2::TokenStream = format!("{:?}", value).parse().unwrap();
     quote!(bevy::ui::#type_name::#value)
-}
-
-fn quote_option<T: ToTokens>(opt: Option<T>) -> TokenStream {
-    match opt {
-        Some(value) => quote!(Some(#value)),
-        None => quote!(None),
-    }
 }
 
 fn quote_f32(value: f32) -> TokenStream {
