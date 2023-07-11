@@ -165,3 +165,22 @@ fn test_macro_bundle() {
     assert_eq!(style, pressed_style.style);
     assert_eq!(pressed_style.color, Some(Color::RED));
 }
+
+#[test]
+fn test_flexbox() {
+    assert_eq!(
+        styled!("basis-0"),
+        Style {
+            flex_basis: Val::Px(0.0),
+            ..Default::default()
+        }
+    );
+
+    assert_eq!(
+        styled!("basis-500"),
+        Style {
+            flex_basis: Val::Px(500.0),
+            ..Default::default()
+        }
+    );
+}

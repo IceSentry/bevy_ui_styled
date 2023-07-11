@@ -321,6 +321,10 @@ fn parse_style_element(
         "shrink-0" => {
             out.flex_shrink = 0.0;
         }
+        // basis
+        style if style.starts_with("basis-") => {
+            out.flex_basis = parse_val("basis-", style)?;
+        }
         // position
         style if style.starts_with("top-") => {
             out.top = parse_val("top-", style)?;
