@@ -183,4 +183,45 @@ fn test_flexbox() {
             ..Default::default()
         }
     );
+
+    assert_eq!(
+        styled!("gap-x-0"),
+        Style {
+            column_gap: Val::Px(0.0),
+            ..Default::default()
+        }
+    );
+
+    assert_eq!(
+        styled!("gap-x-10"),
+        Style {
+            column_gap: Val::Px(10.0),
+            ..Default::default()
+        }
+    );
+
+    assert_eq!(
+        styled!("gap-y-0"),
+        Style {
+            row_gap: Val::Px(0.0),
+            ..Default::default()
+        }
+    );
+
+    assert_eq!(
+        styled!("gap-y-55"),
+        Style {
+            row_gap: Val::Px(55.0),
+            ..Default::default()
+        }
+    );
+
+    assert_eq!(
+        styled!("gap-55"),
+        Style {
+            column_gap: Val::Px(55.0),
+            row_gap: Val::Px(55.0),
+            ..Default::default()
+        }
+    );
 }

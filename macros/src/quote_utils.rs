@@ -42,8 +42,8 @@ pub(crate) fn quote_style(style: Style) -> TokenStream {
     let max_height = quote_val(style.max_height);
     let aspect_ratio = quote_option(style.aspect_ratio);
     // let overflow = quote_enum(style.overflow);
-    // let column_gap = quote_val(style.column_gap);
-    // let row_gap = quote_val(style.row_gap);
+    let column_gap = quote_val(style.column_gap);
+    let row_gap = quote_val(style.row_gap);
     // let grid_auto_columns = quote_vec(style.grid_auto_columns);
     // let grid_auto_rows = quote_vec(style.grid_auto_rows);
     // let grid_auto_flow = quote_enum(style.grid_auto_flow);
@@ -83,8 +83,8 @@ pub(crate) fn quote_style(style: Style) -> TokenStream {
             max_height: #max_height,
             aspect_ratio: #aspect_ratio,
             // overflow: #overflow,
-            // column_gap: #column_gap,
-            // row_gap: #row_gap,
+            column_gap: #column_gap,
+            row_gap: #row_gap,
             // grid_auto_columns: #grid_auto_columns,
             // grid_auto_rows: #grid_auto_rows,
             // grid_auto_flow: #grid_auto_flow,

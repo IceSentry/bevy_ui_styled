@@ -321,6 +321,18 @@ fn parse_style_element(
         "shrink-0" => {
             out.flex_shrink = 0.0;
         }
+        // gap
+        style if style.starts_with("gap-x-") => {
+            out.column_gap = parse_val("gap-x-", style)?;
+        }
+        style if style.starts_with("gap-y-") => {
+            out.row_gap = parse_val("gap-y-", style)?;
+        }
+        style if style.starts_with("gap-") => {
+            let parsed = UiRect::all(parse_val("gap-", style)?);
+            out.row_gap = parsed.top;
+            out.column_gap = parsed.bottom;
+        }
         // basis
         style if style.starts_with("basis-") => {
             out.flex_basis = parse_val("basis-", style)?;
