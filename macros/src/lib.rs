@@ -30,7 +30,7 @@ impl Parse for Input {
 }
 
 /// Reads the given styled string and creates a bundle with the components used by the StyledPlugin
-/// for things like hover/clicked states, background color and text styling
+/// for things like hover/pressed states, background color and text styling
 #[proc_macro]
 pub fn styled_bundle(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let Input { style } = parse_macro_input!(input);
@@ -64,14 +64,14 @@ pub fn styled_bundle(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
     });
     tokens.push(hovered_style);
 
-    // Clicked
-    let clicked_style = quote_style(result.clicked_style);
-    let clicked_bg_color = quote_option(result.clicked_bg_color.map(quote_color_rgba));
-    let clicked_style = quote!(bevy_ui_styled::ClickedStyle {
-        style: #clicked_style,
-        color: #clicked_bg_color,
+    // Pressed
+    let pressed_style = quote_style(result.pressed_style);
+    let pressed_bg_color = quote_option(result.pressed_bg_color.map(quote_color_rgba));
+    let pressed_style = quote!(bevy_ui_styled::PressedStyle {
+        style: #pressed_style,
+        color: #pressed_bg_color,
     });
-    tokens.push(clicked_style);
+    tokens.push(pressed_style);
 
     let mut stream = proc_macro2::TokenStream::new();
     stream.append_separated(tokens, quote!(,));
@@ -95,8 +95,8 @@ struct ParseResult {
     base_bg_color: Option<Color>,
     hovered_style: Style,
     hovered_bg_color: Option<Color>,
-    clicked_style: Style,
-    clicked_bg_color: Option<Color>,
+    pressed_style: Style,
+    pressed_bg_color: Option<Color>,
 }
 
 fn parse_styled(style: &str) -> anyhow::Result<ParseResult> {
@@ -107,21 +107,21 @@ fn parse_styled(style: &str) -> anyhow::Result<ParseResult> {
 
     let styles: Vec<&str> = style.split_whitespace().collect();
     let mut hover_styles = vec![];
-    let mut clicked_styles = vec![];
+    let mut pressed_styles = vec![];
     for style in styles {
         match style {
             style if style.starts_with("hover:") => {
                 hover_styles.push(style.replace("hover:", ""));
             }
-            style if style.starts_with("clicked:") => {
-                clicked_styles.push(style.replace("clicked:", ""));
+            style if style.starts_with("pressed:") => {
+                pressed_styles.push(style.replace("pressed:", ""));
             }
             // no modifier
             _ => parse_style_element(style, &mut result.base_style, &mut result.base_bg_color)?,
         }
     }
 
-    // For hover and clicked state, we need to make sure the style is also the base style not just default values
+    // For hover and pressed state, we need to make sure the style is also the base style not just default values
     result.hovered_style = result.base_style.clone();
     result.hovered_bg_color = result.base_bg_color;
     for style in hover_styles {
@@ -132,13 +132,13 @@ fn parse_styled(style: &str) -> anyhow::Result<ParseResult> {
         )?;
     }
 
-    result.clicked_style = result.base_style.clone();
-    result.clicked_bg_color = result.base_bg_color;
-    for style in clicked_styles {
+    result.pressed_style = result.base_style.clone();
+    result.pressed_bg_color = result.base_bg_color;
+    for style in pressed_styles {
         parse_style_element(
             &style,
-            &mut result.clicked_style,
-            &mut result.clicked_bg_color,
+            &mut result.pressed_style,
+            &mut result.pressed_bg_color,
         )?;
     }
 
@@ -188,8 +188,8 @@ fn parse_style_element(
         }
         style if style.starts_with("overflow-") => {
             out.overflow = match style {
-                "overflow-hidden" => Overflow::Hidden,
-                "overflow-visible" => Overflow::Visible,
+                "overflow-hidden" => Overflow::clip(),
+                "overflow-visible" => Overflow::visible(),
                 _ => unimplemented!("{style}"),
             }
         }
@@ -255,43 +255,43 @@ fn parse_style_element(
         }
         // width
         "w-auto" => {
-            out.size.width = Val::Auto;
+            out.width = Val::Auto;
         }
         "w-full" => {
-            out.size.width = Val::Percent(100.0);
+            out.width = Val::Percent(100.0);
         }
         style if style.starts_with("w-") => {
-            out.size.width = parse_val("w-", style)?;
+            out.width = parse_val("w-", style)?;
         }
         // max-width
         "max-w-auto" => {
-            out.max_size.width = Val::Auto;
+            out.max_width = Val::Auto;
         }
         "max-w-full" => {
-            out.max_size.width = Val::Percent(100.0);
+            out.max_width = Val::Percent(100.0);
         }
         style if style.starts_with("max-w-") => {
-            out.max_size.width = parse_val("max-w-", style)?;
+            out.max_width = parse_val("max-w-", style)?;
         }
         // height
         "h-auto" => {
-            out.size.height = Val::Auto;
+            out.height = Val::Auto;
         }
         "h-full" => {
-            out.size.height = Val::Percent(100.0);
+            out.height = Val::Percent(100.0);
         }
         style if style.starts_with("h-") => {
-            out.size.height = parse_val("h-", style)?;
+            out.height = parse_val("h-", style)?;
         }
         // max-height
         "max-h-auto" => {
-            out.max_size.height = Val::Auto;
+            out.max_height = Val::Auto;
         }
         "max-h-full" => {
-            out.max_size.height = Val::Percent(100.0);
+            out.max_height = Val::Percent(100.0);
         }
         style if style.starts_with("max-h-") => {
-            out.max_size.height = parse_val("max-h-", style)?;
+            out.max_height = parse_val("max-h-", style)?;
         }
         // display
         "hidden" => {
@@ -323,29 +323,33 @@ fn parse_style_element(
         }
         // position
         style if style.starts_with("top-") => {
-            out.position.top = parse_val("top-", style)?;
+            out.top = parse_val("top-", style)?;
         }
         style if style.starts_with("right-") => {
-            out.position.right = parse_val("right-", style)?;
+            out.right = parse_val("right-", style)?;
         }
         style if style.starts_with("bottom-") => {
-            out.position.bottom = parse_val("bottom-", style)?;
+            out.bottom = parse_val("bottom-", style)?;
         }
         style if style.starts_with("left-") => {
-            out.position.left = parse_val("left-", style)?;
+            out.left = parse_val("left-", style)?;
         }
         style if style.starts_with("inset-y-") => {
             let val = parse_val("inset-y-", style)?;
-            out.position.left = val;
-            out.position.right = val;
+            out.left = val;
+            out.right = val;
         }
         style if style.starts_with("inset-x-") => {
             let val = parse_val("inset-x-", style)?;
-            out.position.left = val;
-            out.position.right = val;
+            out.left = val;
+            out.right = val;
         }
         style if style.starts_with("inset-") => {
-            out.position = UiRect::all(parse_val("inset-", style)?);
+            let parsed = UiRect::all(parse_val("inset-", style)?);
+            out.top = parsed.top;
+            out.right = parsed.right;
+            out.bottom = parsed.bottom;
+            out.left = parsed.left;
         }
         style if style.starts_with("bg-") => {
             bg_color.replace(parse_color_name(&style.replace("bg-", "")));

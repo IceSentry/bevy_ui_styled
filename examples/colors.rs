@@ -5,7 +5,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .insert_resource(WinitSettings::desktop_app())
-        .add_startup_system(setup)
+        .add_systems(Startup, setup)
         .run();
 }
 

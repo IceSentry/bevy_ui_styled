@@ -9,10 +9,9 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .insert_resource(WinitSettings::desktop_app())
-        .add_plugin(StyledPlugin)
-        .add_startup_system(setup)
-        .add_system(on_button_interact)
-        .add_system(on_count_changed)
+        .add_plugins(StyledPlugin)
+        .add_systems(Startup, setup)
+        .add_systems(Update, (on_button_interact, on_count_changed))
         .run();
 }
 
@@ -34,7 +33,7 @@ fn on_button_interact(
     mut count_query: Query<&mut Count>,
 ) {
     for (interaction, increment, decrement) in &mut interaction_query {
-        if let Interaction::Clicked = *interaction {
+        if let Interaction::Pressed = *interaction {
             let mut count = count_query.single_mut();
             if increment.is_some() {
                 count.0 += 1;
@@ -72,7 +71,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .insert(styled_bundle!("
                     w-full h-full m-auto justify-center items-center bg-green
                     hover:bg-red
-                    clicked:bg-blue
+                    pressed:bg-blue
                 "))
                 .with_children(|c| {
                     c.spawn(TextBundle::from_section("-", text_style.clone()));
@@ -91,9 +90,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
             c.spawn((ButtonBundle::default(), Increment))
                 .insert(styled_bundle!(
-                    "w-full h-full m-auto justify-center items-center bg-green hover:bg-red clicked:bg-blue
+                    "w-full h-full m-auto justify-center items-center bg-green hover:bg-red pressed:bg-blue
                     hover:bg-red
-                    clicked:bg-blue"
+                    pressed:bg-blue"
                 ))
                 .with_children(|c| {
                     c.spawn(TextBundle::from_section("+", text_style.clone()));

@@ -10,7 +10,7 @@ The basic idea is that each `Style` property has a simple short-hand value that 
 
 ## Example
 
-This is the button example in bevy 0.8
+This is the button example in bevy 0.11
 
 ```rust
 use bevy::prelude::*;
@@ -19,7 +19,8 @@ fn system(mut commands: Commands, asset_server: AssetServer) {
     commands
         .spawn(ButtonBundle {
             style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                width: Val::Px(150.0),
+                height: Val::Px(65.0),
                 // center button
                 margin: UiRect::all(Val::Auto),
                 // horizontally center child text
@@ -100,5 +101,5 @@ If you don't like repeating the same classes multiple time, you can easily just 
 use bevy::prelude::*;
 use bevy_ui_styled::styled;
 
-const GLOBAL_STYLE: Style = styled!("w-full h-full justify-center");
+let global_style: Style = styled!("w-full h-full justify-center");
 ```
