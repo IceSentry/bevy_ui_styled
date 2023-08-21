@@ -102,3 +102,10 @@ use bevy_ui_styled::styled;
 
 const GLOBAL_STYLE: Style = styled!("w-full h-full justify-center");
 ```
+
+## Bevy Version Support
+
+| bevy | bevy_ui_styled |
+| ---- | -------------- |
+| 0.3  | 0.10           |
+| 0.2  | 0.9            |
