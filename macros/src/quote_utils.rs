@@ -34,6 +34,7 @@ pub(crate) fn quote_style(style: Style) -> TokenStream {
     let max_size = quote_size(style.max_size);
     let aspect_ratio = quote_option(style.aspect_ratio);
     let overflow = quote_enum(style.overflow);
+    let gap = quote_size(style.gap);
 
     quote! {
         bevy::ui::Style {
@@ -58,6 +59,7 @@ pub(crate) fn quote_style(style: Style) -> TokenStream {
             max_size: #max_size,
             aspect_ratio: #aspect_ratio,
             overflow: #overflow,
+            gap: #gap,
         }
     }
 }

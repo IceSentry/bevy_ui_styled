@@ -1,6 +1,6 @@
 [package]
 name = "bevy_ui_styled"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/IceSentry/bevy_ui_styled"
@@ -8,15 +8,12 @@ description = "Utility function that let's you define a bevy_ui `Style` componen
 exclude = ["assets/", "tools/"]
 
 [dependencies]
-bevy = { version = "0.9", default-features = false, features = [
-    "bevy_ui",
-    "render",
-] }
+bevy = "0.10"
 anyhow = "^1.0"
-bevy_ui_styled_macros = { path = "macros", version = "0.2.0" }
+bevy_ui_styled_macros = { path = "macros", version = "0.3.0" }
 
 [dev-dependencies]
-bevy = "0.9"
+bevy = "0.10"
 
 [workspace]
 members = ["macros"]

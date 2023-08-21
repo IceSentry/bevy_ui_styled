@@ -53,7 +53,6 @@ fn update_interactable_style(
                     if let Some(color) = clicked.color {
                         *bg_color = BackgroundColor(color);
                     }
-                    // *style = compare_style(&style, &clicked.style);
                     *style = clicked.style.clone();
                 }
             }
@@ -62,7 +61,6 @@ fn update_interactable_style(
                     if let Some(color) = hovered.color {
                         *bg_color = BackgroundColor(color);
                     }
-                    // *style = compare_style(&style, &hovered.style);
                     *style = hovered.style.clone();
                 }
             }
@@ -70,7 +68,6 @@ fn update_interactable_style(
                 if let Some(color) = base.color {
                     *bg_color = BackgroundColor(color);
                 }
-                // *style = compare_style(&style, &base.style);
                 *style = base.style.clone();
             }
         }

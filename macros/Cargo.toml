@@ -1,6 +1,6 @@
 [package]
 name = "bevy_ui_styled_macros"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Macros for bevy_ui_styled"
@@ -13,8 +13,5 @@ proc-macro = true
 syn = "1.0"
 proc-macro2 = "1.0"
 quote = "1.0"
-bevy = { version = "0.9", default-features = false, features = [
-    "bevy_ui",
-    "render",
-] }
+bevy = "0.10.0"
 anyhow = "^1.0"
