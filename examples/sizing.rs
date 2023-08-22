@@ -9,18 +9,18 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .insert_resource(WinitSettings::desktop_app())
-        .add_startup_system(setup)
+        .add_systems(Startup, setup)
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands) {
     // Camera
     commands.spawn(Camera2dBundle::default());
 
     let text_style = TextStyle {
-        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
         font_size: 30.0,
         color: WHITE,
+        ..default()
     };
 
     // Ui tree
@@ -31,44 +31,58 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ))
         .with_children(|c| {
             c.spawn(NodeBundle::default())
-                .insert(styled!("h-full w-96% mb-4 justify-center items-center"))
-                .insert(BackgroundColor(SLATE_500))
+                .insert((
+                    styled!("h-full w-96% mb-4 justify-center items-center"),
+                    BackgroundColor(SLATE_500),
+                ))
                 .with_children(|c| {
                     c.spawn(TextBundle::from_section("w-96%", text_style.clone()));
                 });
             c.spawn(NodeBundle::default())
-                .insert(styled!("h-full w-80% my-4 justify-center items-center"))
-                .insert(BackgroundColor(SLATE_500))
+                .insert((
+                    styled!("h-full w-80% mb-4 justify-center items-center"),
+                    BackgroundColor(SLATE_500),
+                ))
                 .with_children(|c| {
                     c.spawn(TextBundle::from_section("w-80%", text_style.clone()));
                 });
             c.spawn(NodeBundle::default())
-                .insert(styled!("h-full w-72% my-4 justify-center items-center"))
-                .insert(BackgroundColor(SLATE_500))
+                .insert((
+                    styled!("h-full w-72% my-4 justify-center items-center"),
+                    BackgroundColor(SLATE_500),
+                ))
                 .with_children(|c| {
                     c.spawn(TextBundle::from_section("w-72%", text_style.clone()));
                 });
             c.spawn(NodeBundle::default())
-                .insert(styled!("h-full w-64% my-4 justify-center items-center"))
-                .insert(BackgroundColor(SLATE_500))
+                .insert((
+                    styled!("h-full w-64% my-4 justify-center items-center"),
+                    BackgroundColor(SLATE_500),
+                ))
                 .with_children(|c| {
                     c.spawn(TextBundle::from_section("w-64%", text_style.clone()));
                 });
             c.spawn(NodeBundle::default())
-                .insert(styled!("h-full w-56% my-4 justify-center items-center"))
-                .insert(BackgroundColor(SLATE_500))
+                .insert((
+                    styled!("h-full w-56% my-4 justify-center items-center"),
+                    BackgroundColor(SLATE_500),
+                ))
                 .with_children(|c| {
                     c.spawn(TextBundle::from_section("w-56%", text_style.clone()));
                 });
             c.spawn(NodeBundle::default())
-                .insert(styled!("h-full w-52% my-4 justify-center items-center"))
-                .insert(BackgroundColor(SLATE_500))
+                .insert((
+                    styled!("h-full w-52% my-4 justify-center items-center"),
+                    BackgroundColor(SLATE_500),
+                ))
                 .with_children(|c| {
                     c.spawn(TextBundle::from_section("w-52%", text_style.clone()));
                 });
             c.spawn(NodeBundle::default())
-                .insert(styled!("h-full w-48% mt-4 justify-center items-center"))
-                .insert(BackgroundColor(SLATE_500))
+                .insert((
+                    styled!("h-full w-48% mt-4 justify-center items-center"),
+                    BackgroundColor(SLATE_500),
+                ))
                 .with_children(|c| {
                     c.spawn(TextBundle::from_section("w-48%", text_style.clone()));
                 });

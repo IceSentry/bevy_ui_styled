@@ -18,7 +18,7 @@ pub struct HoveredStyle {
 }
 
 #[derive(Component)]
-pub struct ClickedStyle {
+pub struct PressedStyle {
     pub style: Style,
     pub color: Option<Color>,
 }
@@ -26,7 +26,7 @@ pub struct ClickedStyle {
 pub struct StyledPlugin;
 impl Plugin for StyledPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(update_interactable_style);
+        app.add_systems(Update, update_interactable_style);
     }
 }
 
@@ -41,19 +41,19 @@ fn update_interactable_style(
             &mut Style,
             &BaseStyle,
             Option<&HoveredStyle>,
-            Option<&ClickedStyle>,
+            Option<&PressedStyle>,
         ),
         Changed<Interaction>,
     >,
 ) {
-    for (interaction, mut bg_color, mut style, base, hovered, clicked) in &mut interaction_query {
+    for (interaction, mut bg_color, mut style, base, hovered, pressed) in &mut interaction_query {
         match interaction {
-            Interaction::Clicked => {
-                if let Some(clicked) = clicked {
-                    if let Some(color) = clicked.color {
+            Interaction::Pressed => {
+                if let Some(pressed) = pressed {
+                    if let Some(color) = pressed.color {
                         *bg_color = BackgroundColor(color);
                     }
-                    *style = clicked.style.clone();
+                    *style = pressed.style.clone();
                 }
             }
             Interaction::Hovered => {

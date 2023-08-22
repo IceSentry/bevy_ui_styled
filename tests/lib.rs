@@ -134,7 +134,7 @@ fn test_aspect_ratio() {
 
 #[test]
 fn test_macro_bundle() {
-    let (style, base_style, hovered_style, clicked_style) = styled_bundle!("flex");
+    let (style, base_style, hovered_style, pressed_style) = styled_bundle!("flex");
     assert_eq!(
         style,
         Style {
@@ -149,10 +149,10 @@ fn test_macro_bundle() {
     assert_eq!(style, hovered_style.style);
     assert_eq!(hovered_style.color, None);
 
-    assert_eq!(style, clicked_style.style);
-    assert_eq!(clicked_style.color, None);
+    assert_eq!(style, pressed_style.style);
+    assert_eq!(pressed_style.color, None);
 
-    let (style, bg_color, base_style, hovered_style, clicked_style) =
+    let (style, bg_color, base_style, hovered_style, pressed_style) =
         styled_bundle!("bg-red hover:bg-blue");
 
     assert_eq!(style, base_style.style);
@@ -162,6 +162,6 @@ fn test_macro_bundle() {
     assert_eq!(style, hovered_style.style);
     assert_eq!(hovered_style.color, Some(Color::BLUE));
 
-    assert_eq!(style, clicked_style.style);
-    assert_eq!(clicked_style.color, Some(Color::RED));
+    assert_eq!(style, pressed_style.style);
+    assert_eq!(pressed_style.color, Some(Color::RED));
 }

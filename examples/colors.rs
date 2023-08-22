@@ -5,18 +5,18 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .insert_resource(WinitSettings::desktop_app())
-        .add_startup_system(setup)
+        .add_systems(Startup, setup)
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands) {
     // Camera
     commands.spawn(Camera2dBundle::default());
 
     let text_style = TextStyle {
-        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
         font_size: 16.0,
         color: WHITE,
+        ..default()
     };
 
     // Ui tree
@@ -32,36 +32,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     c.spawn(NodeBundle::default())
                         .insert(styled!("h-full flex-row justify-between"))
                         .with_children(|c| {
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(SKY_50));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(SKY_100));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(SKY_200));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(SKY_300));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(SKY_400));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(SKY_500));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(SKY_600));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(SKY_700));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(SKY_800));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(SKY_900));
+                            for color in [
+                                SKY_50, SKY_100, SKY_200, SKY_200, SKY_300, SKY_400, SKY_500,
+                                SKY_600, SKY_700, SKY_800, SKY_900,
+                            ] {
+                                c.spawn(NodeBundle::default())
+                                    .insert(styled!("aspect-square h-full"))
+                                    .insert(BackgroundColor(color));
+                            }
                         });
 
                     c.spawn(NodeBundle::default())
@@ -78,36 +56,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     c.spawn(NodeBundle::default())
                         .insert(styled!("h-full flex-row justify-between"))
                         .with_children(|c| {
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(BLUE_50));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(BLUE_100));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(BLUE_200));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(BLUE_300));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(BLUE_400));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(BLUE_500));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(BLUE_600));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(BLUE_700));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(BLUE_800));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(BLUE_900));
+                            for color in [
+                                BLUE_50, BLUE_100, BLUE_200, BLUE_200, BLUE_300, BLUE_400,
+                                BLUE_500, BLUE_600, BLUE_700, BLUE_800, BLUE_900,
+                            ] {
+                                c.spawn(NodeBundle::default())
+                                    .insert(styled!("aspect-square h-full"))
+                                    .insert(BackgroundColor(color));
+                            }
                         });
 
                     c.spawn(NodeBundle::default())
@@ -125,36 +81,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     c.spawn(NodeBundle::default())
                         .insert(styled!("h-full flex-row justify-between"))
                         .with_children(|c| {
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(INDIGO_50));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(INDIGO_100));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(INDIGO_200));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(INDIGO_300));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(INDIGO_400));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(INDIGO_500));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(INDIGO_600));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(INDIGO_700));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(INDIGO_800));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(INDIGO_900));
+                            for color in [
+                                INDIGO_50, INDIGO_100, INDIGO_200, INDIGO_200, INDIGO_300,
+                                INDIGO_400, INDIGO_500, INDIGO_600, INDIGO_700, INDIGO_800,
+                                INDIGO_900,
+                            ] {
+                                c.spawn(NodeBundle::default())
+                                    .insert(styled!("aspect-square h-full"))
+                                    .insert(BackgroundColor(color));
+                            }
                         });
 
                     c.spawn(NodeBundle::default())
@@ -172,36 +107,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     c.spawn(NodeBundle::default())
                         .insert(styled!("h-full flex-row justify-between"))
                         .with_children(|c| {
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(VIOLET_50));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(VIOLET_100));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(VIOLET_200));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(VIOLET_300));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(VIOLET_400));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(VIOLET_500));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(VIOLET_600));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(VIOLET_700));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(VIOLET_800));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(VIOLET_900));
+                            for color in [
+                                VIOLET_50, VIOLET_100, VIOLET_200, VIOLET_200, VIOLET_300,
+                                VIOLET_400, VIOLET_500, VIOLET_600, VIOLET_700, VIOLET_800,
+                                VIOLET_900,
+                            ] {
+                                c.spawn(NodeBundle::default())
+                                    .insert(styled!("aspect-square h-full"))
+                                    .insert(BackgroundColor(color));
+                            }
                         });
 
                     c.spawn(NodeBundle::default())
@@ -219,36 +133,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     c.spawn(NodeBundle::default())
                         .insert(styled!("h-full flex-row justify-between"))
                         .with_children(|c| {
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(ORANGE_50));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(ORANGE_100));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(ORANGE_200));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(ORANGE_300));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(ORANGE_400));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(ORANGE_500));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(ORANGE_600));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(ORANGE_700));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(ORANGE_800));
-                            c.spawn(NodeBundle::default())
-                                .insert(styled!("aspect-square"))
-                                .insert(BackgroundColor(ORANGE_900));
+                            for color in [
+                                ORANGE_50, ORANGE_100, ORANGE_200, ORANGE_200, ORANGE_300,
+                                ORANGE_400, ORANGE_500, ORANGE_600, ORANGE_700, ORANGE_800,
+                                ORANGE_900,
+                            ] {
+                                c.spawn(NodeBundle::default())
+                                    .insert(styled!("aspect-square h-full"))
+                                    .insert(BackgroundColor(color));
+                            }
                         });
 
                     c.spawn(NodeBundle::default())

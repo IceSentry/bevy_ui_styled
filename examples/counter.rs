@@ -7,12 +7,10 @@ use bevy_ui_styled_macros::styled_bundle;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins((DefaultPlugins, StyledPlugin))
         .insert_resource(WinitSettings::desktop_app())
-        .add_plugin(StyledPlugin)
-        .add_startup_system(setup)
-        .add_system(on_button_interact)
-        .add_system(on_count_changed)
+        .add_systems(Startup, setup)
+        .add_systems(Update, (on_button_interact, on_count_changed))
         .run();
 }
 
@@ -34,7 +32,7 @@ fn on_button_interact(
     mut count_query: Query<&mut Count>,
 ) {
     for (interaction, increment, decrement) in &mut interaction_query {
-        if let Interaction::Clicked = *interaction {
+        if let Interaction::Pressed = *interaction {
             let mut count = count_query.single_mut();
             if increment.is_some() {
                 count.0 += 1;
@@ -51,7 +49,7 @@ fn on_count_changed(mut count_query: Query<(&mut Text, &Count), Changed<Count>>)
     }
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands) {
     // Camera
     commands.spawn(Camera2dBundle::default());
 
@@ -63,20 +61,23 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .with_children(|c| {
             let text_style = TextStyle {
-                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                 font_size: 40.0,
                 color: WHITE,
+                ..default()
             };
 
-            c.spawn((ButtonBundle::default(), Decrement))
-                .insert(styled_bundle!("
-                    w-full h-full m-auto justify-center items-center bg-green
+            c.spawn((
+                ButtonBundle::default(),
+                Decrement,
+                styled_bundle!(
+                    "w-full h-full m-auto justify-center items-center bg-green
                     hover:bg-red
-                    clicked:bg-blue
-                "))
-                .with_children(|c| {
-                    c.spawn(TextBundle::from_section("-", text_style.clone()));
-                });
+                    pressed:bg-blue"
+                ),
+            ))
+            .with_children(|c| {
+                c.spawn(TextBundle::from_section("-", text_style.clone()));
+            });
 
             c.spawn(NodeBundle {
                 style: styled!("w-1/3 shrink-0 justify-center items-center"),
@@ -89,14 +90,17 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ));
             });
 
-            c.spawn((ButtonBundle::default(), Increment))
-                .insert(styled_bundle!(
-                    "w-full h-full m-auto justify-center items-center bg-green hover:bg-red clicked:bg-blue
+            c.spawn((
+                ButtonBundle::default(),
+                Increment,
+                styled_bundle!(
+                    "w-full h-full m-auto justify-center items-center bg-green
                     hover:bg-red
-                    clicked:bg-blue"
-                ))
-                .with_children(|c| {
-                    c.spawn(TextBundle::from_section("+", text_style.clone()));
-                });
+                    pressed:bg-blue"
+                ),
+            ))
+            .with_children(|c| {
+                c.spawn(TextBundle::from_section("+", text_style.clone()));
+            });
         });
 }

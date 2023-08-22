@@ -19,7 +19,8 @@ fn system(mut commands: Commands, asset_server: AssetServer) {
     commands
         .spawn(ButtonBundle {
             style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                width: Val::Px(150.0),
+                height: Val::Px(65.0),
                 // center button
                 margin: UiRect::all(Val::Auto),
                 // horizontally center child text
@@ -35,9 +36,9 @@ fn system(mut commands: Commands, asset_server: AssetServer) {
             parent.spawn(TextBundle::from_section(
                 "Button",
                 TextStyle {
-                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                     font_size: 40.0,
                     color: Color::rgb(0.9, 0.9, 0.9),
+                    ..default()
                 },
             ));
         });
@@ -62,14 +63,13 @@ fn system(mut commands: Commands, asset_server: AssetServer) {
             parent.spawn(TextBundle::from_section(
                 "Button",
                 TextStyle {
-                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                     font_size: 40.0,
                     color: Color::rgb(0.9, 0.9, 0.9),
+                    ..default()
                 },
             ));
         });
 }
-
 ```
 
 ## Px, Percent, Auto
@@ -90,22 +90,12 @@ styled!("m-auto"); // a Val::Auto margin
 
 ## Colors
 
-I also created a `colors` module that contains the default colors from tailwind. Unlike tailwind these aren't easily customizable, but you can just use `const CUSTOM_COLOR: Color` to do that. This is just to have some basic color to get you started.
-
-## Extracting Styles
-
-If you don't like repeating the same classes multiple time, you can easily just store the output of the macro in a variable and use it whenever you want to duplicate a style.
-
-```rust
-use bevy::prelude::*;
-use bevy_ui_styled::styled;
-
-const GLOBAL_STYLE: Style = styled!("w-full h-full justify-center");
-```
+`bevy_ui_styled` has a `colors` module that contains the default colors from tailwind. Unlike tailwind these aren't easily customizable, but you can use `const CUSTOM_COLOR: Color` if you want custom colors. The goal of this module is to have some basic colors to get you started.
 
 ## Bevy Version Support
 
-| bevy | bevy_ui_styled |
-| ---- | -------------- |
-| 0.3  | 0.10           |
-| 0.2  | 0.9            |
+| bevy_ui_styled | bevy |
+| -------------- | ---- |
+| 0.4            | 0.11 |
+| 0.3            | 0.10 |
+| 0.2            | 0.9  |
