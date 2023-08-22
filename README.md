@@ -21,11 +21,8 @@ fn system(mut commands: Commands, asset_server: AssetServer) {
             style: Style {
                 width: Val::Px(150.0),
                 height: Val::Px(65.0),
-                // center button
                 margin: UiRect::all(Val::Auto),
-                // horizontally center child text
                 justify_content: JustifyContent::Center,
-                // vertically center child text
                 align_items: AlignItems::Center,
                 ..default()
             },
@@ -33,14 +30,7 @@ fn system(mut commands: Commands, asset_server: AssetServer) {
             ..default()
         })
         .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "Button",
-                TextStyle {
-                    font_size: 40.0,
-                    color: Color::rgb(0.9, 0.9, 0.9),
-                    ..default()
-                },
-            ));
+            parent.spawn(TextBundle::from_section("Button", TextStyle::default()));
         });
 }
 ```
@@ -54,27 +44,19 @@ use bevy_ui_styled::styled;
 fn system(mut commands: Commands, asset_server: AssetServer) {
     commands
         .spawn(ButtonBundle {
-            // This will return a Style component that is identical to the one above
             style: styled!("w-150 h-65 m-auto justify-center items-center"),
             background_color: Color::RED.into(),
             ..default()
         })
         .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "Button",
-                TextStyle {
-                    font_size: 40.0,
-                    color: Color::rgb(0.9, 0.9, 0.9),
-                    ..default()
-                },
-            ));
+            parent.spawn(TextBundle::from_section("Button", TextStyle::default()));
         });
 }
 ```
 
 ## Px, Percent, Auto
 
-Some of those utilities support passing a numerical value. Numbers are parse as `f32` so you can pass it any valid `f32`. If you use a fraction, it will compute the value as a percentage and clamp it to 100%.
+Some of those utilities support passing a numerical value. Numbers are parsed as `f32` so you can pass it any valid `f32`. If you use a fraction, it will compute the value as a percentage and clamp it to 100%.
 
 ```rust
 use bevy_ui_styled::styled;
@@ -91,6 +73,16 @@ styled!("m-auto"); // a Val::Auto margin
 ## Colors
 
 `bevy_ui_styled` has a `colors` module that contains the default colors from tailwind. Unlike tailwind these aren't easily customizable, but you can use `const CUSTOM_COLOR: Color` if you want custom colors. The goal of this module is to have some basic colors to get you started.
+
+## Styled Bundle
+
+### Background color
+
+The background color is not a part of the `Style` struct so the default `styled` macro can't control it. If you want to be able to modify the background color you'll need to use the `styled_bundle` macro.
+
+### Stateful styles
+
+Sometimes, you want to change a property based on the state of the component. The default `styled` macro doesn't do that, but you can use `styled_bundle` instead. `styled_bundle` will return a `Bundle` containing different styles that will automatically be toggled based on interaction state.
 
 ## Bevy Version Support
 
