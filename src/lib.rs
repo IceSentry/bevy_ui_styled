@@ -3,7 +3,7 @@
 use bevy::prelude::*;
 
 pub mod colors;
-pub use bevy_ui_styled_macros::styled;
+pub use bevy_ui_styled_macros::{styled, styled_bundle};
 
 #[derive(Component)]
 pub struct BaseStyle {
